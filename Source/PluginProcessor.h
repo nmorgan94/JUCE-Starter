@@ -1,6 +1,7 @@
 #pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
+#include "Parameters.h"
 
 //==============================================================================
 class AudioPluginAudioProcessor final : public juce::AudioProcessor
@@ -42,7 +43,12 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
-private:
     //==============================================================================
+    juce::AudioProcessorValueTreeState& getAPVTS() { return apvts; }
+
+private:
+    juce::AudioProcessorValueTreeState apvts { *this, nullptr, "Parameters",
+                                               Parameters::createLayout() };
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessor)
 };

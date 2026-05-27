@@ -110,7 +110,7 @@ Edit `CMakeLists.txt` to customize:
 project(PluginTemplate)  # Change project name
 
 juce_add_plugin(${PROJECT_NAME}
-    COMPANY_NAME MyCompanyName              # Your company name
+    COMPANY_NAME MyCompanyName            # Your company name
     PLUGIN_MANUFACTURER_CODE Mycn         # 4-char manufacturer ID
     PLUGIN_CODE Plgn                      # 4-char unique plugin ID
     VERSION 0.0.0                         # Version number

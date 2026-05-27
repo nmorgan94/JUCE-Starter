@@ -1,6 +1,7 @@
 #pragma once
 
 #include "PluginProcessor.h"
+#include "ui/CustomLookAndFeel.h"
 // #include <BinaryData.h> add BinaryData here
 
 //==============================================================================
@@ -19,7 +20,7 @@ private:
     // access the processor object that created it.
     AudioPluginAudioProcessor& processorRef;
 
-
+    CustomLookAndFeel customLookAndFeel;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessorEditor)
 };
