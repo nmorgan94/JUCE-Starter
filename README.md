@@ -77,7 +77,7 @@ cmake --preset release && cmake --build --preset release && open build-release/P
 
 ### What Happens During Build
 
-1. **First time only**: CMake downloads JUCE 8.0.12 automatically via CPM
+1. **First time only**: CMake downloads JUCE automatically via CPM
 2. **Every build**: Compiles your plugin in the selected configuration
 3. **If `COPY_PLUGIN_AFTER_BUILD` is enabled**: Installs plugins to system directories
 
