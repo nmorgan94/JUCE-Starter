@@ -1,4 +1,4 @@
-# PluginTemplate
+# JuceStarter
 
 A JUCE audio plugin template for creating VST3, AU, and Standalone audio plugins.
 
@@ -8,6 +8,7 @@ A JUCE audio plugin template for creating VST3, AU, and Standalone audio plugins
 - Modern C++23
 - Automatic JUCE dependency management via CPM
 - Binary asset support
+- Plugin validation via pluginval, wired up as CTest tests
 
 
 ## Adding Assets
@@ -64,42 +65,74 @@ cmake --build --preset release
 **macOS:**
 ```bash
 # Debug version
-open build-debug/PluginTemplate_artefacts/Debug/Standalone/PluginTemplate.app
+open build-debug/JuceStarter_artefacts/Debug/Standalone/JuceStarter.app
 
 # Release version
-open build-release/PluginTemplate_artefacts/Release/Standalone/PluginTemplate.app
-```
-
-**Build and Run in One Command:**
-```bash
-cmake --preset release && cmake --build --preset release && open build-release/PluginTemplate_artefacts/Release/Standalone/PluginTemplate.app
+open build-release/JuceStarter_artefacts/Release/Standalone/JuceStarter.app
 ```
 
 ### What Happens During Build
 
-1. **First time only**: CMake downloads JUCE automatically via CPM
+1. **First time only**: CMake downloads JUCE and pluginval automatically via CPM
 2. **Every build**: Compiles your plugin in the selected configuration
 3. **If `COPY_PLUGIN_AFTER_BUILD` is enabled**: Installs plugins to system directories
+
+## Debugging in Xcode
+
+To debug the plugin in Xcode with an executable:
+
+### 1. Generate Xcode Project
+
+```bash
+cmake -B build-xcode -G Xcode
+open build-xcode/JuceStarter.xcodeproj
+```
+
+### 2. Configure Debugging
+
+1. Select your plugin target from the scheme dropdown
+2. Go to **Product → Scheme → Edit Scheme**
+3. Click **Run** on the left sidebar
+4. Under **Executable**, choose **Other** and navigate to executable.
+
+## Validating the Plugin
+
+[pluginval](https://github.com/Tracktion/pluginval) loads the built plugin as a host would and
+tests it for stability. It is built from source on demand, so there is nothing to install.
+
+```bash
+cmake --build --preset debug --target validate   # builds, then validates
+ctest --preset debug                             # validates an existing build
+```
+
+Logs land in `build-debug/pluginval-logs/`. Strictness defaults to 10; use
+`-DPLUGINVAL_STRICTNESS=5` (range 1–10) for a faster run, or `-DENABLE_PLUGINVAL=OFF` to skip
+pluginval entirely.
+
+The AU test validates the installed component in `~/Library/Audio/Plug-Ins/Components`, since macOS
+resolves Audio Units through its registry rather than by path — so it needs `COPY_PLUGIN_AFTER_BUILD`
+left on. Steinberg's VST3 conformance validator is off by default, as it pulls ~300MB of SDK for one
+extra test; enable it with `-DPLUGINVAL_VST3_VALIDATOR=ON`.
 
 ## Plugin Locations
 
 ### Build Artifacts
 
 **Debug Build:**
-- Standalone: `build-debug/PluginTemplate_artefacts/Debug/Standalone/PluginTemplate.app`
-- AU: `build-debug/PluginTemplate_artefacts/Debug/AU/PluginTemplate.component`
-- VST3: `build-debug/PluginTemplate_artefacts/Debug/VST3/PluginTemplate.vst3`
+- Standalone: `build-debug/JuceStarter_artefacts/Debug/Standalone/JuceStarter.app`
+- AU: `build-debug/JuceStarter_artefacts/Debug/AU/JuceStarter.component`
+- VST3: `build-debug/JuceStarter_artefacts/Debug/VST3/JuceStarter.vst3`
 
 **Release Build:**
-- Standalone: `build-release/PluginTemplate_artefacts/Release/Standalone/PluginTemplate.app`
-- AU: `build-release/PluginTemplate_artefacts/Release/AU/PluginTemplate.component`
-- VST3: `build-release/PluginTemplate_artefacts/Release/VST3/PluginTemplate.vst3`
+- Standalone: `build-release/JuceStarter_artefacts/Release/Standalone/JuceStarter.app`
+- AU: `build-release/JuceStarter_artefacts/Release/AU/JuceStarter.component`
+- VST3: `build-release/JuceStarter_artefacts/Release/VST3/JuceStarter.vst3`
 
 ### System Installation (if `COPY_PLUGIN_AFTER_BUILD` is enabled)
 
 **macOS:**
-- **VST3**: `~/Library/Audio/Plug-Ins/VST3/PluginTemplate.vst3`
-- **AU**: `~/Library/Audio/Plug-Ins/Components/PluginTemplate.component`
+- **VST3**: `~/Library/Audio/Plug-Ins/VST3/JuceStarter.vst3`
+- **AU**: `~/Library/Audio/Plug-Ins/Components/JuceStarter.component`
 
 
 ## Customization
@@ -107,7 +140,7 @@ cmake --preset release && cmake --build --preset release && open build-release/P
 Edit `CMakeLists.txt` to customize:
 
 ```cmake
-project(PluginTemplate)  # Change project name
+project(JuceStarter)  # Change project name
 
 juce_add_plugin(${PROJECT_NAME}
     COMPANY_NAME MyCompanyName            # Your company name
@@ -117,34 +150,4 @@ juce_add_plugin(${PROJECT_NAME}
     FORMATS VST3 AU Standalone            # Plugin formats to build
     # ... other options
 )
-```
-
-## Project Structure
-
-```
-├── Assets/                  # Binary assets (images, audio files, etc.)
-├── build-debug/             # Debug build directory (generated)
-├── build-release/           # Release build directory (generated)
-└── Source/
-    ├── PluginEditor.cpp     # GUI implementation
-    ├── PluginEditor.h       # GUI header
-    ├── PluginProcessor.cpp  # Audio processing
-    └── PluginProcessor.h    # Audio processor header
-├── CMakeLists.txt           # Build configuration
-├── CMakePresets.json        # CMake presets for Debug/Release
-```
-
-## Clean Build
-
-```bash
-# Remove build directories and rebuild
-rm -rf build-debug build-release
-
-# Rebuild Debug
-cmake --preset debug
-cmake --build --preset debug
-
-# Rebuild Release
-cmake --preset release
-cmake --build --preset release
 ```
