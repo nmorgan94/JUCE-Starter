@@ -9,6 +9,7 @@ A JUCE audio plugin template for creating VST3, AU, and Standalone audio plugins
 - Automatic JUCE dependency management via CPM
 - Binary asset support
 - Plugin validation via pluginval, wired up as CTest tests
+- Unit tests with Catch2, run through CTest alongside pluginval
 
 
 ## Adding Assets
@@ -73,7 +74,8 @@ open build-release/JuceStarter_artefacts/Release/Standalone/JuceStarter.app
 
 ### What Happens During Build
 
-1. **First time only**: CMake downloads JUCE and pluginval automatically via CPM
+1. **First time only**: CMake downloads JUCE, pluginval and Catch2 automatically via CPM
+   (configure with `-DENABLE_PLUGINVAL=OFF -DENABLE_UNIT_TESTS=OFF` to fetch only JUCE)
 2. **Every build**: Compiles your plugin in the selected configuration
 3. **If `COPY_PLUGIN_AFTER_BUILD` is enabled**: Installs plugins to system directories
 
@@ -95,15 +97,33 @@ open build-xcode/JuceStarter.xcodeproj
 3. Click **Run** on the left sidebar
 4. Under **Executable**, choose **Other** and navigate to executable.
 
+## Unit Tests
+
+Unit tests live in `Tests/` and use [Catch2](https://github.com/catchorg/Catch2). They build into a
+`JuceStarter_Tests` executable that links the plugin's code and drives the processor directly,
+checking parameters, audio output, bus layouts and state save/restore.
+
+```bash
+cmake --build --preset unit && ctest --preset unit    # builds and runs the unit tests
+cmake --build --preset test && ctest --preset debug   # same, plus pluginval
+```
+
+Like pluginval, the tests are not part of a plain build (`cmake --build --preset debug` builds only
+the plugin), so build with the `unit` or `test` preset before running `ctest`.
+
+Add a `.cpp` file to `Tests/` and reconfigure to pick it up. `Tests/TestHelpers.h` has helpers for
+setting parameters and processing buffers. Set `-DENABLE_UNIT_TESTS=OFF` to skip them entirely.
+
 ## Validating the Plugin
 
 [pluginval](https://github.com/Tracktion/pluginval) loads the built plugin as a host would and
 tests it for stability. It is built from source on demand, so there is nothing to install.
 
 ```bash
-cmake --build --preset debug --target validate   # builds, then validates
-ctest --preset debug                             # validates an existing build
+cmake --build --preset debug --target validate   # builds the plugin and pluginval, then validates
 ```
+
+To run pluginval together with the unit tests, use the `test` preset (see [Unit Tests](#unit-tests)).
 
 Logs land in `build-debug/pluginval-logs/`. Strictness defaults to 10; use
 `-DPLUGINVAL_STRICTNESS=5` (range 1–10) for a faster run, or `-DENABLE_PLUGINVAL=OFF` to skip

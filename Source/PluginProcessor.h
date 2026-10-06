@@ -50,5 +50,7 @@ private:
     juce::AudioProcessorValueTreeState apvts { *this, nullptr, "Parameters",
                                                Parameters::createLayout() };
 
+    std::atomic<float>* masterGain { apvts.getRawParameterValue (Parameters::masterGainId.getParamID()) };
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessor)
 };

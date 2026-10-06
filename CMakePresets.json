@@ -37,14 +37,26 @@
       "name": "release",
       "displayName": "Release Build",
       "configurePreset": "release"
+    },
+    {
+      "name": "unit",
+      "displayName": "Unit Tests Build",
+      "description": "Build the Catch2 unit tests (and the plugin code they link)",
+      "configurePreset": "debug",
+      "targets": ["unit_tests"]
+    },
+    {
+      "name": "test",
+      "displayName": "All Tests Build",
+      "description": "Build the plugin, pluginval and the unit tests",
+      "configurePreset": "debug",
+      "targets": ["all_tests"]
     }
   ],
   "testPresets": [
     {
-      "name": "debug",
-      "displayName": "Debug Tests",
-      "description": "Run pluginval validation against the Debug build",
-      "configurePreset": "debug",
+      "name": "test-base",
+      "hidden": true,
       "output": {
         "outputOnFailure": true
       },
@@ -54,17 +66,30 @@
       }
     },
     {
+      "name": "debug",
+      "displayName": "Debug Tests",
+      "description": "Run the unit tests and pluginval against the Debug build",
+      "inherits": "test-base",
+      "configurePreset": "debug"
+    },
+    {
+      "name": "unit",
+      "displayName": "Unit Tests",
+      "description": "Run only the Catch2 unit tests against the Debug build (skips pluginval)",
+      "inherits": "test-base",
+      "configurePreset": "debug",
+      "filter": {
+        "include": {
+          "name": "\\.unit\\."
+        }
+      }
+    },
+    {
       "name": "release",
       "displayName": "Release Tests",
-      "description": "Run pluginval validation against the Release build",
-      "configurePreset": "release",
-      "output": {
-        "outputOnFailure": true
-      },
-      "execution": {
-        "noTestsAction": "error",
-        "jobs": 0
-      }
+      "description": "Run the unit tests and pluginval against the Release build",
+      "inherits": "test-base",
+      "configurePreset": "release"
     }
   ]
 }

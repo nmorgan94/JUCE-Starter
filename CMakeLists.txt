@@ -117,3 +117,6 @@ target_link_libraries(${PROJECT_NAME}
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Pluginval.cmake)
 add_pluginval_tests(${PROJECT_NAME})
+
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Tests.cmake)
+add_unit_tests(${PROJECT_NAME})
