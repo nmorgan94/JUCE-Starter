@@ -55,6 +55,7 @@ private:
 
     std::atomic<float>* masterGain { apvts.getRawParameterValue (Parameters::masterGainId.getParamID()) };
 
+    static_assert (PluginConfig::numChannels <= PeakMeter::maxChannels);
     PeakMeter outputMeter { PluginConfig::numChannels };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessor)

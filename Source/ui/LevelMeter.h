@@ -18,6 +18,11 @@ public:
         clipColourId
     };
 
+    static constexpr int barWidth = 12;
+    static constexpr int gap = 3;
+
+    static constexpr int widthFor (int numChannels)   { return barWidth * numChannels + gap * (numChannels - 1); }
+
     //==============================================================================
     /** What one bar shows. update() is called at updateHz with the peak since the last call. */
     struct Ballistics
@@ -66,19 +71,18 @@ public:
     {
         const auto numChannels = meter.getNumChannels();
         auto area = getLocalBounds().toFloat();
-        const auto barWidth = (area.getWidth() - gap * static_cast<float> (numChannels - 1))
-                              / static_cast<float> (numChannels);
+        const auto gapWidth = static_cast<float> (gap);
+        const auto width = (area.getWidth() - gapWidth * static_cast<float> (numChannels - 1))
+                           / static_cast<float> (numChannels);
 
         for (int channel = 0; channel < numChannels; ++channel)
         {
-            paintBar (g, area.removeFromLeft (barWidth), bars[static_cast<size_t> (channel)]);
-            area.removeFromLeft (gap);
+            paintBar (g, area.removeFromLeft (width), bars[static_cast<size_t> (channel)]);
+            area.removeFromLeft (gapWidth);
         }
     }
 
 private:
-    static constexpr float gap = 3.0f;
-
     PeakMeter& meter;
     std::array<Ballistics, PeakMeter::maxChannels> bars;
 
@@ -88,19 +92,34 @@ private:
         const auto light = bounds.removeFromTop (6.0f);
         bounds.removeFromTop (3.0f);
 
-        g.setColour (findColour (bar.isClipping() ? clipColourId : outlineColourId));
+        g.setColour (colour (bar.isClipping() ? clipColourId : outlineColourId));
         g.fillRoundedRectangle (light, 2.0f);
 
-        g.setColour (findColour (backgroundColourId));
+        g.setColour (colour (backgroundColourId));
         g.fillRoundedRectangle (bounds, 2.0f);
 
         const auto fraction = juce::jmap (bar.levelDb, Ballistics::floorDb, 0.0f, 0.0f, 1.0f);
         auto fill = bounds.reduced (1.0f);
-        g.setColour (findColour (barColourId));
+        g.setColour (colour (barColourId));
         g.fillRoundedRectangle (fill.removeFromBottom (fill.getHeight() * fraction), 1.5f);
 
-        g.setColour (findColour (outlineColourId));
+        g.setColour (colour (outlineColourId));
         g.drawRoundedRectangle (bounds, 2.0f, 1.0f);
+    }
+
+    // Falls back to standard LookAndFeel_V4 colours, so the meter follows any colour scheme
+    juce::Colour colour (int id) const
+    {
+        if (isColourSpecified (id) || getLookAndFeel().isColourSpecified (id))
+            return findColour (id);
+
+        switch (id)
+        {
+            case backgroundColourId: return findColour (juce::Slider::backgroundColourId);
+            case outlineColourId:    return findColour (juce::ComboBox::outlineColourId);
+            case barColourId:        return findColour (juce::Slider::thumbColourId);
+            default:                 return juce::Colour (0xffff3d4a);
+        }
     }
 
     void timerCallback() override

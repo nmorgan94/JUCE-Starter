@@ -104,9 +104,8 @@ bool AudioPluginAudioProcessor::isBusesLayoutSupported (const BusesLayout& layou
     juce::ignoreUnused (layouts);
     return true;
   #else
-    // Only the layout chosen in PluginConfig.h is supported.
-    // Some plugin hosts, such as certain GarageBand versions, will only
-    // load plugins that support stereo bus layouts.
+    // Only the layout chosen in PluginConfig.h is supported. Some hosts, such as
+    // certain GarageBand versions, only load stereo plugins, so a mono build won't load there.
     if (layouts.getMainOutputChannelSet() != PluginConfig::channelSet())
         return false;
 

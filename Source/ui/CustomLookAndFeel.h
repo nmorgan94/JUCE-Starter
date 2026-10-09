@@ -1,7 +1,6 @@
 #pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
-#include "LevelMeter.h"
 
 //==============================================================================
 /**
@@ -13,16 +12,7 @@
 class CustomLookAndFeel : public juce::LookAndFeel_V4
 {
 public:
-    CustomLookAndFeel()
-    {
-        // Custom components have no colours in LookAndFeel_V4, so give them some here
-        const auto& scheme = getCurrentColourScheme();
-        setColour (LevelMeter::backgroundColourId, scheme.getUIColour (ColourScheme::UIColour::widgetBackground));
-        setColour (LevelMeter::outlineColourId,    scheme.getUIColour (ColourScheme::UIColour::outline));
-        setColour (LevelMeter::barColourId,        scheme.getUIColour (ColourScheme::UIColour::defaultFill));
-        setColour (LevelMeter::clipColourId,       juce::Colour (0xffff3d4a));
-    }
-
+    CustomLookAndFeel()           = default;
     ~CustomLookAndFeel() override = default;
 
     // Add your custom drawing overrides below, e.g.:

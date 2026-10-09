@@ -3,7 +3,7 @@
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
 #include "TestHelpers.h"
-#include "ui/CustomLookAndFeel.h"
+#include "ui/LevelMeter.h"
 
 using namespace TestHelpers;
 using Catch::Matchers::WithinAbs;
@@ -93,16 +93,7 @@ TEST_CASE ("Level meter clip light holds after going over 0 dB", "[meter][ui]")
     CHECK_FALSE (bar.isClipping());
 }
 
-TEST_CASE ("CustomLookAndFeel gives the level meter its colours", "[meter][ui]")
-{
-    CustomLookAndFeel lookAndFeel;
-
-    for (const auto id : { LevelMeter::backgroundColourId, LevelMeter::outlineColourId,
-                           LevelMeter::barColourId, LevelMeter::clipColourId })
-        CHECK (lookAndFeel.isColourSpecified (id));
-}
-
-TEST_CASE ("Level meter paints one bar per channel", "[meter][ui]")
+TEST_CASE ("Level meter paints one bar per channel in the look and feel's colours", "[meter][ui]")
 {
     juce::ScopedJuceInitialiser_GUI juceInitialiser;
 
@@ -110,18 +101,28 @@ TEST_CASE ("Level meter paints one bar per channel", "[meter][ui]")
     CAPTURE (meterChannels);
 
     PeakMeter source { meterChannels };
-    CustomLookAndFeel lookAndFeel;
     LevelMeter meter { source };
-    meter.setLookAndFeel (&lookAndFeel);
-    meter.setSize (31, 120);
+    meter.setSize (LevelMeter::widthFor (meterChannels), 120);
+
+    juce::Colour expected;
+
+    SECTION ("With no colours set, it uses the LookAndFeel_V4 slider background")
+    {
+        expected = juce::LookAndFeel::getDefaultLookAndFeel().findColour (juce::Slider::backgroundColourId);
+    }
+
+    SECTION ("A colour set on the meter overrides that")
+    {
+        expected = juce::Colours::red;
+        meter.setColour (LevelMeter::backgroundColourId, expected);
+    }
 
     // Bars start empty, so each one's middle shows the background colour
     const auto image = meter.createComponentSnapshot (meter.getLocalBounds());
-    const auto background = lookAndFeel.findColour (LevelMeter::backgroundColourId);
-    const auto barWidth = (31 - 3 * (meterChannels - 1)) / meterChannels;
 
     for (int channel = 0; channel < meterChannels; ++channel)
-        CHECK (image.getPixelAt (channel * (barWidth + 3) + barWidth / 2, 60) == background);
-
-    meter.setLookAndFeel (nullptr);
+    {
+        const auto x = channel * (LevelMeter::barWidth + LevelMeter::gap) + LevelMeter::barWidth / 2;
+        CHECK (image.getPixelAt (x, 60) == expected);
+    }
 }

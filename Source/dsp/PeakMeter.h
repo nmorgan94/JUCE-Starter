@@ -24,9 +24,7 @@ public:
 
         for (int channel = 0; channel < channelsToRead; ++channel)
         {
-            const auto range = juce::FloatVectorOperations::findMinAndMax (buffer.getReadPointer (channel),
-                                                                           buffer.getNumSamples());
-            const auto blockPeak = std::max (-range.getStart(), range.getEnd());
+            const auto blockPeak = buffer.getMagnitude (channel, 0, buffer.getNumSamples());
 
             auto& peak = peaks[static_cast<size_t> (channel)];
             auto current = peak.load();
@@ -35,11 +33,17 @@ public:
     }
 
     /** The loudest sample on a channel since the last call, as linear gain. */
-    float readAndReset (int channel) noexcept   { return peaks[static_cast<size_t> (channel)].exchange (0.0f); }
+    float readAndReset (int channel) noexcept
+    {
+        jassert (juce::isPositiveAndBelow (channel, numChannels));
+        return peaks[static_cast<size_t> (channel)].exchange (0.0f);
+    }
 
     int getNumChannels() const noexcept         { return numChannels; }
 
 private:
+    static_assert (std::atomic<float>::is_always_lock_free, "PeakMeter is used on the audio thread");
+
     const int numChannels;
     std::array<std::atomic<float>, maxChannels> peaks {};
 
