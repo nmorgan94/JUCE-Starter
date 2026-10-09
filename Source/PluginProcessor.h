@@ -2,6 +2,8 @@
 
 #include <juce_audio_processors/juce_audio_processors.h>
 #include "Parameters.h"
+#include "PluginConfig.h"
+#include "dsp/PeakMeter.h"
 
 //==============================================================================
 class AudioPluginAudioProcessor final : public juce::AudioProcessor
@@ -45,12 +47,15 @@ public:
 
     //==============================================================================
     juce::AudioProcessorValueTreeState& getAPVTS() { return apvts; }
+    PeakMeter& getOutputMeter()                    { return outputMeter; }
 
 private:
     juce::AudioProcessorValueTreeState apvts { *this, nullptr, "Parameters",
                                                Parameters::createLayout() };
 
     std::atomic<float>* masterGain { apvts.getRawParameterValue (Parameters::masterGainId.getParamID()) };
+
+    PeakMeter outputMeter { PluginConfig::numChannels };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessor)
 };

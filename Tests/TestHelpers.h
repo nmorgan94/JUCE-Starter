@@ -9,6 +9,7 @@ namespace TestHelpers
 {
     constexpr double sampleRate = 48000.0;
     constexpr int blockSize = 512;
+    constexpr int pluginChannels = PluginConfig::numChannels;
 
     // Sets a parameter in its real units (e.g. dB) the way a host would
     inline void setParameter (AudioPluginAudioProcessor& processor,

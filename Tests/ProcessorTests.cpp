@@ -35,7 +35,7 @@ TEST_CASE_METHOD (ProcessorFixture, "Master gain scales the signal", "[dsp][gain
     setParameter (processor, Parameters::masterGainId, gainDb);
 
     constexpr float input = 0.5f;
-    auto buffer = makeConstantBuffer (2, blockSize, input);
+    auto buffer = makeConstantBuffer (pluginChannels, blockSize, input);
     process (processor, buffer);
 
     for (int channel = 0; channel < buffer.getNumChannels(); ++channel)
@@ -62,7 +62,7 @@ TEST_CASE_METHOD (ProcessorFixture, "Output stays finite for any block size, inp
         CAPTURE (gainDb);
         setParameter (processor, Parameters::masterGainId, gainDb);
 
-        auto buffer = makeSineBuffer (2, numSamples, 440.0f, amplitude);
+        auto buffer = makeSineBuffer (pluginChannels, numSamples, 440.0f, amplitude);
         process (processor, buffer);
 
         CHECK (allSamplesFinite (buffer));
@@ -70,17 +70,38 @@ TEST_CASE_METHOD (ProcessorFixture, "Output stays finite for any block size, inp
 }
 
 //==============================================================================
-TEST_CASE_METHOD (ProcessorFixture, "Only matching mono or stereo layouts are supported", "[buses]")
+TEST_CASE_METHOD (ProcessorFixture, "Only the layout set in PluginConfig is supported", "[buses]")
 {
     using Set = juce::AudioChannelSet;
 
-    // Each layout is { { input bus }, { output bus } }
-    CHECK (processor.isBusesLayoutSupported ({ { Set::mono() },   { Set::mono() } }));
-    CHECK (processor.isBusesLayoutSupported ({ { Set::stereo() }, { Set::stereo() } }));
+    const auto configured = PluginConfig::channelSet();
+    const auto other = configured == Set::mono() ? Set::stereo() : Set::mono();
 
-    CHECK_FALSE (processor.isBusesLayoutSupported ({ { Set::mono() },   { Set::stereo() } }));
-    CHECK_FALSE (processor.isBusesLayoutSupported ({ { Set::stereo() }, { Set::mono() } }));
+    CHECK (processor.getTotalNumInputChannels() == pluginChannels);
+    CHECK (processor.getTotalNumOutputChannels() == pluginChannels);
+
+    // Each layout is { { input bus }, { output bus } }
+    CHECK (processor.isBusesLayoutSupported ({ { configured }, { configured } }));
+
+    CHECK_FALSE (processor.isBusesLayoutSupported ({ { other },      { other } }));
+    CHECK_FALSE (processor.isBusesLayoutSupported ({ { configured }, { other } }));
+    CHECK_FALSE (processor.isBusesLayoutSupported ({ { other },      { configured } }));
     CHECK_FALSE (processor.isBusesLayoutSupported ({ { Set::create5point1() }, { Set::create5point1() } }));
+}
+
+//==============================================================================
+TEST_CASE_METHOD (ProcessorFixture, "Output meter reads the signal after the gain", "[meter]")
+{
+    setParameter (processor, Parameters::masterGainId, -6.0f);
+
+    auto& meter = processor.getOutputMeter();
+    REQUIRE (meter.getNumChannels() == pluginChannels);
+
+    auto buffer = makeConstantBuffer (pluginChannels, blockSize, 0.5f);
+    process (processor, buffer);
+
+    for (int channel = 0; channel < pluginChannels; ++channel)
+        CHECK_THAT (meter.readAndReset (channel), WithinAbs (0.5 * 0.501187, 1.0e-4));
 }
 
 //==============================================================================
