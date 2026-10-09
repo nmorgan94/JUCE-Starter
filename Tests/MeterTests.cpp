@@ -7,6 +7,7 @@
 
 using namespace TestHelpers;
 using Catch::Matchers::WithinAbs;
+using Ballistics = LevelMeter::Ballistics;
 
 //==============================================================================
 TEST_CASE ("Peak meter holds each channel's loudest sample until read", "[meter]")
@@ -19,8 +20,7 @@ TEST_CASE ("Peak meter holds each channel's loudest sample until read", "[meter]
     meter.process (buffer);
 
     // A quieter block afterwards doesn't lower what's waiting to be read
-    auto quieter = makeConstantBuffer (2, 64, 0.1f);
-    meter.process (quieter);
+    meter.process (makeConstantBuffer (2, 64, 0.1f));
 
     CHECK_THAT (meter.readAndReset (0), WithinAbs (0.8, 1.0e-6));
     CHECK_THAT (meter.readAndReset (1), WithinAbs (0.3, 1.0e-6));
@@ -31,7 +31,8 @@ TEST_CASE ("Peak meter holds each channel's loudest sample until read", "[meter]
 
 TEST_CASE ("A mono peak meter ignores extra channels", "[meter]")
 {
-    PeakMeter meter { 1 };
+    PeakMeter meter { 2 };
+    meter.setNumChannels (1);
     REQUIRE (meter.getNumChannels() == 1);
 
     auto buffer = makeConstantBuffer (2, 64, 0.2f);
@@ -39,12 +40,12 @@ TEST_CASE ("A mono peak meter ignores extra channels", "[meter]")
     meter.process (buffer);
 
     CHECK_THAT (meter.readAndReset (0), WithinAbs (0.2, 1.0e-6));
+    CHECK_THAT (meter.readAndReset (1), WithinAbs (0.0, 0.0));
 }
 
 //==============================================================================
 TEST_CASE ("Level meter bars rise at once and fall smoothly", "[meter][ui]")
 {
-    using Ballistics = LevelMeter::Ballistics;
     Ballistics bar;
 
     CHECK_THAT (bar.levelDb, WithinAbs (Ballistics::floorDb, 0.0));
@@ -71,7 +72,6 @@ TEST_CASE ("Level meter bars rise at once and fall smoothly", "[meter][ui]")
 
 TEST_CASE ("Level meter clip light holds after going over 0 dB", "[meter][ui]")
 {
-    using Ballistics = LevelMeter::Ballistics;
     Ballistics bar;
 
     const auto peak = GENERATE (1.5f, std::numeric_limits<float>::infinity());
@@ -93,7 +93,7 @@ TEST_CASE ("Level meter clip light holds after going over 0 dB", "[meter][ui]")
     CHECK_FALSE (bar.isClipping());
 }
 
-TEST_CASE ("Level meter paints one bar per channel in the look and feel's colours", "[meter][ui]")
+TEST_CASE ("Level meter paints one centred bar per channel in the look and feel's colours", "[meter][ui]")
 {
     juce::ScopedJuceInitialiser_GUI juceInitialiser;
 
@@ -102,7 +102,7 @@ TEST_CASE ("Level meter paints one bar per channel in the look and feel's colour
 
     PeakMeter source { meterChannels };
     LevelMeter meter { source };
-    meter.setSize (LevelMeter::widthFor (meterChannels), 120);
+    meter.setSize (LevelMeter::preferredWidth, 120);
 
     juce::Colour expected;
 
@@ -119,10 +119,19 @@ TEST_CASE ("Level meter paints one bar per channel in the look and feel's colour
 
     // Bars start empty, so each one's middle shows the background colour
     const auto image = meter.createComponentSnapshot (meter.getLocalBounds());
+    const auto middle = LevelMeter::preferredWidth / 2;
+    const auto leftBar = LevelMeter::barWidth / 2;
+    const auto rightBar = LevelMeter::preferredWidth - LevelMeter::barWidth / 2 - 1;
 
-    for (int channel = 0; channel < meterChannels; ++channel)
+    if (meterChannels == 1)
     {
-        const auto x = channel * (LevelMeter::barWidth + LevelMeter::gap) + LevelMeter::barWidth / 2;
-        CHECK (image.getPixelAt (x, 60) == expected);
+        CHECK (image.getPixelAt (middle, 60) == expected);
+        CHECK (image.getPixelAt (leftBar, 60).isTransparent());
+    }
+    else
+    {
+        CHECK (image.getPixelAt (leftBar, 60) == expected);
+        CHECK (image.getPixelAt (rightBar, 60) == expected);
+        CHECK (image.getPixelAt (middle, 60).isTransparent());
     }
 }

@@ -2,7 +2,6 @@
 
 #include <juce_audio_processors/juce_audio_processors.h>
 #include "Parameters.h"
-#include "PluginConfig.h"
 #include "dsp/PeakMeter.h"
 
 //==============================================================================
@@ -18,6 +17,7 @@ public:
     void releaseResources() override;
 
     bool isBusesLayoutSupported (const BusesLayout& layouts) const override;
+    void numChannelsChanged() override;
 
     void processBlock (juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
     using AudioProcessor::processBlock;
@@ -55,8 +55,7 @@ private:
 
     std::atomic<float>* masterGain { apvts.getRawParameterValue (Parameters::masterGainId.getParamID()) };
 
-    static_assert (PluginConfig::numChannels <= PeakMeter::maxChannels);
-    PeakMeter outputMeter { PluginConfig::numChannels };
+    PeakMeter outputMeter { getTotalNumOutputChannels() };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessor)
 };

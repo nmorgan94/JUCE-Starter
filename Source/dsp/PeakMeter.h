@@ -14,13 +14,17 @@ class PeakMeter
 public:
     static constexpr int maxChannels = 2;
 
-    explicit PeakMeter (int numChannelsToMeter)
-        : numChannels (juce::jlimit (1, maxChannels, numChannelsToMeter)) {}
+    explicit PeakMeter (int numChannelsToMeter)   { setNumChannels (numChannelsToMeter); }
+
+    void setNumChannels (int numChannelsToMeter) noexcept
+    {
+        numChannels = juce::jlimit (1, maxChannels, numChannelsToMeter);
+    }
 
     /** Channels beyond getNumChannels() are ignored. */
     void process (const juce::AudioBuffer<float>& buffer) noexcept
     {
-        const auto channelsToRead = juce::jmin (numChannels, buffer.getNumChannels());
+        const auto channelsToRead = juce::jmin (getNumChannels(), buffer.getNumChannels());
 
         for (int channel = 0; channel < channelsToRead; ++channel)
         {
@@ -35,16 +39,17 @@ public:
     /** The loudest sample on a channel since the last call, as linear gain. */
     float readAndReset (int channel) noexcept
     {
-        jassert (juce::isPositiveAndBelow (channel, numChannels));
+        jassert (juce::isPositiveAndBelow (channel, maxChannels));
         return peak (channel).exchange (0.0f);
     }
 
-    int getNumChannels() const noexcept         { return numChannels; }
+    int getNumChannels() const noexcept         { return numChannels.load(); }
 
 private:
-    static_assert (std::atomic<float>::is_always_lock_free, "PeakMeter is used on the audio thread");
+    static_assert (std::atomic<float>::is_always_lock_free && std::atomic<int>::is_always_lock_free,
+                   "PeakMeter is used on the audio thread");
 
-    const int numChannels;
+    std::atomic<int> numChannels;
     std::array<std::atomic<float>, maxChannels> peaks {};
 
     std::atomic<float>& peak (int channel) noexcept   { return peaks[static_cast<size_t> (channel)]; }

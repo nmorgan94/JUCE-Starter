@@ -35,13 +35,16 @@ TEST_CASE_METHOD (ProcessorFixture, "Master gain scales the signal", "[dsp][gain
     setParameter (processor, Parameters::masterGainId, gainDb);
 
     constexpr float input = 0.5f;
-    auto buffer = makeConstantBuffer (pluginChannels, blockSize, input);
+    auto buffer = makeConstantBuffer (2, blockSize, input);
     process (processor, buffer);
 
     for (int channel = 0; channel < buffer.getNumChannels(); ++channel)
     {
         CHECK_THAT (buffer.getSample (channel, 0), WithinAbs (input * expectedGain, 1.0e-4));
         CHECK_THAT (buffer.getSample (channel, blockSize - 1), WithinAbs (input * expectedGain, 1.0e-4));
+
+        // The output meter reads the signal after the gain
+        CHECK_THAT (processor.getOutputMeter().readAndReset (channel), WithinAbs (input * expectedGain, 1.0e-4));
     }
 }
 
@@ -62,7 +65,7 @@ TEST_CASE_METHOD (ProcessorFixture, "Output stays finite for any block size, inp
         CAPTURE (gainDb);
         setParameter (processor, Parameters::masterGainId, gainDb);
 
-        auto buffer = makeSineBuffer (pluginChannels, numSamples, 440.0f, amplitude);
+        auto buffer = makeSineBuffer (2, numSamples, 440.0f, amplitude);
         process (processor, buffer);
 
         CHECK (allSamplesFinite (buffer));
@@ -70,38 +73,37 @@ TEST_CASE_METHOD (ProcessorFixture, "Output stays finite for any block size, inp
 }
 
 //==============================================================================
-TEST_CASE_METHOD (ProcessorFixture, "Only the layout set in PluginConfig is supported", "[buses]")
+TEST_CASE_METHOD (ProcessorFixture, "Only matching mono or stereo layouts are supported", "[buses]")
 {
     using Set = juce::AudioChannelSet;
 
-    const auto configured = PluginConfig::channelSet();
-    const auto other = configured == Set::mono() ? Set::stereo() : Set::mono();
-
-    CHECK (processor.getTotalNumInputChannels() == pluginChannels);
-    CHECK (processor.getTotalNumOutputChannels() == pluginChannels);
-
     // Each layout is { { input bus }, { output bus } }
-    CHECK (processor.isBusesLayoutSupported ({ { configured }, { configured } }));
+    CHECK (processor.isBusesLayoutSupported ({ { Set::mono() },   { Set::mono() } }));
+    CHECK (processor.isBusesLayoutSupported ({ { Set::stereo() }, { Set::stereo() } }));
 
-    CHECK_FALSE (processor.isBusesLayoutSupported ({ { other },      { other } }));
-    CHECK_FALSE (processor.isBusesLayoutSupported ({ { configured }, { other } }));
-    CHECK_FALSE (processor.isBusesLayoutSupported ({ { other },      { configured } }));
+    CHECK_FALSE (processor.isBusesLayoutSupported ({ { Set::mono() },   { Set::stereo() } }));
+    CHECK_FALSE (processor.isBusesLayoutSupported ({ { Set::stereo() }, { Set::mono() } }));
     CHECK_FALSE (processor.isBusesLayoutSupported ({ { Set::create5point1() }, { Set::create5point1() } }));
 }
 
-//==============================================================================
-TEST_CASE_METHOD (ProcessorFixture, "Output meter reads the signal after the gain", "[meter]")
+TEST_CASE_METHOD (ProcessorFixture, "Output meter follows the bus layout", "[buses][meter]")
 {
-    setParameter (processor, Parameters::masterGainId, -6.0f);
+    using Set = juce::AudioChannelSet;
 
-    auto& meter = processor.getOutputMeter();
-    REQUIRE (meter.getNumChannels() == pluginChannels);
+    const auto changeLayout = [this] (const Set& set)
+    {
+        processor.releaseResources();
+        REQUIRE (processor.setBusesLayout ({ { set }, { set } }));
+        processor.prepareToPlay (sampleRate, blockSize);
+    };
 
-    auto buffer = makeConstantBuffer (pluginChannels, blockSize, 0.5f);
-    process (processor, buffer);
+    CHECK (processor.getOutputMeter().getNumChannels() == 2);
 
-    for (int channel = 0; channel < pluginChannels; ++channel)
-        CHECK_THAT (meter.readAndReset (channel), WithinAbs (0.5 * 0.501187, 1.0e-4));
+    changeLayout (Set::mono());
+    CHECK (processor.getOutputMeter().getNumChannels() == 1);
+
+    changeLayout (Set::stereo());
+    CHECK (processor.getOutputMeter().getNumChannels() == 2);
 }
 
 //==============================================================================

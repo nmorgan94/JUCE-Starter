@@ -55,5 +55,5 @@ void AudioPluginAudioProcessorEditor::resized()
     // subcomponents in your editor..
 
     outputMeter.setBounds (getLocalBounds().removeFromRight (50)
-                               .withSizeKeepingCentre (LevelMeter::widthFor (PluginConfig::numChannels), 160));
+                               .withSizeKeepingCentre (LevelMeter::preferredWidth, 160));
 }

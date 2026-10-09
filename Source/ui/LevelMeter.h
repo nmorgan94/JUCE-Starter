@@ -20,8 +20,7 @@ public:
 
     static constexpr int barWidth = 12;
     static constexpr int gap = 3;
-
-    static constexpr int widthFor (int numChannels)   { return barWidth * numChannels + gap * (numChannels - 1); }
+    static constexpr int preferredWidth = barWidth * PeakMeter::maxChannels + gap * (PeakMeter::maxChannels - 1);
 
     //==============================================================================
     /** What one bar shows. update() is called at updateHz with the peak since the last call. */
@@ -70,21 +69,21 @@ public:
     void paint (juce::Graphics& g) override
     {
         const auto numChannels = meter.getNumChannels();
-        auto area = getLocalBounds().toFloat();
-        const auto gapWidth = static_cast<float> (gap);
-        const auto width = (area.getWidth() - gapWidth * static_cast<float> (numChannels - 1))
-                           / static_cast<float> (numChannels);
+        auto area = getLocalBounds().withSizeKeepingCentre (widthFor (numChannels), getHeight());
 
         for (int channel = 0; channel < numChannels; ++channel)
         {
-            paintBar (g, area.removeFromLeft (width), bar (channel));
-            area.removeFromLeft (gapWidth);
+            paintBar (g, area.removeFromLeft (barWidth).toFloat(), bar (channel));
+            area.removeFromLeft (gap);
         }
     }
 
 private:
     PeakMeter& meter;
     std::array<Ballistics, PeakMeter::maxChannels> bars;
+    int barsShown = 0;
+
+    static constexpr int widthFor (int numChannels)   { return barWidth * numChannels + gap * (numChannels - 1); }
 
     Ballistics& bar (int channel)   { return bars[static_cast<size_t> (channel)]; }
 
@@ -126,9 +125,10 @@ private:
 
     void timerCallback() override
     {
-        auto changed = false;
+        const auto numChannels = meter.getNumChannels();
+        auto changed = std::exchange (barsShown, numChannels) != numChannels;
 
-        for (int channel = 0; channel < meter.getNumChannels(); ++channel)
+        for (int channel = 0; channel < numChannels; ++channel)
             changed |= bar (channel).update (meter.readAndReset (channel));
 
         if (changed)
