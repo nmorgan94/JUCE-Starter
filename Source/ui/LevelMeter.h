@@ -48,8 +48,8 @@ public:
                 --clipTicks;
 
             // Capped at the top of the scale, so even an infinite peak can still fall away
-            const auto newLevel = juce::jmin (0.0f, std::max (juce::Decibels::gainToDecibels (peak, floorDb),
-                                                              levelDb - fallDbPerTick));
+            const auto newLevel = juce::jmin (0.0f, juce::jmax (juce::Decibels::gainToDecibels (peak, floorDb),
+                                                               levelDb - fallDbPerTick));
 
             const auto changed = ! juce::approximatelyEqual (newLevel, levelDb) || wasClipping != isClipping();
             levelDb = newLevel;
@@ -77,7 +77,7 @@ public:
 
         for (int channel = 0; channel < numChannels; ++channel)
         {
-            paintBar (g, area.removeFromLeft (width), bars[static_cast<size_t> (channel)]);
+            paintBar (g, area.removeFromLeft (width), bar (channel));
             area.removeFromLeft (gapWidth);
         }
     }
@@ -86,19 +86,21 @@ private:
     PeakMeter& meter;
     std::array<Ballistics, PeakMeter::maxChannels> bars;
 
-    void paintBar (juce::Graphics& g, juce::Rectangle<float> bounds, const Ballistics& bar) const
+    Ballistics& bar (int channel)   { return bars[static_cast<size_t> (channel)]; }
+
+    void paintBar (juce::Graphics& g, juce::Rectangle<float> bounds, const Ballistics& state) const
     {
         bounds = bounds.reduced (0.5f);
         const auto light = bounds.removeFromTop (6.0f);
         bounds.removeFromTop (3.0f);
 
-        g.setColour (colour (bar.isClipping() ? clipColourId : outlineColourId));
+        g.setColour (colour (state.isClipping() ? clipColourId : outlineColourId));
         g.fillRoundedRectangle (light, 2.0f);
 
         g.setColour (colour (backgroundColourId));
         g.fillRoundedRectangle (bounds, 2.0f);
 
-        const auto fraction = juce::jmap (bar.levelDb, Ballistics::floorDb, 0.0f, 0.0f, 1.0f);
+        const auto fraction = juce::jmap (state.levelDb, Ballistics::floorDb, 0.0f, 0.0f, 1.0f);
         auto fill = bounds.reduced (1.0f);
         g.setColour (colour (barColourId));
         g.fillRoundedRectangle (fill.removeFromBottom (fill.getHeight() * fraction), 1.5f);
@@ -127,7 +129,7 @@ private:
         auto changed = false;
 
         for (int channel = 0; channel < meter.getNumChannels(); ++channel)
-            changed |= bars[static_cast<size_t> (channel)].update (meter.readAndReset (channel));
+            changed |= bar (channel).update (meter.readAndReset (channel));
 
         if (changed)
             repaint();

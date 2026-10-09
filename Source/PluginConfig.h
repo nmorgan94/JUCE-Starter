@@ -15,6 +15,6 @@ namespace PluginConfig
 
     inline juce::AudioChannelSet channelSet()
     {
-        return numChannels == 1 ? juce::AudioChannelSet::mono() : juce::AudioChannelSet::stereo();
+        return juce::AudioChannelSet::canonicalChannelSet (numChannels);
     }
 }

@@ -26,9 +26,9 @@ public:
         {
             const auto blockPeak = buffer.getMagnitude (channel, 0, buffer.getNumSamples());
 
-            auto& peak = peaks[static_cast<size_t> (channel)];
-            auto current = peak.load();
-            while (blockPeak > current && ! peak.compare_exchange_weak (current, blockPeak)) {}
+            auto& channelPeak = peak (channel);
+            auto current = channelPeak.load();
+            while (blockPeak > current && ! channelPeak.compare_exchange_weak (current, blockPeak)) {}
         }
     }
 
@@ -36,7 +36,7 @@ public:
     float readAndReset (int channel) noexcept
     {
         jassert (juce::isPositiveAndBelow (channel, numChannels));
-        return peaks[static_cast<size_t> (channel)].exchange (0.0f);
+        return peak (channel).exchange (0.0f);
     }
 
     int getNumChannels() const noexcept         { return numChannels; }
@@ -46,6 +46,8 @@ private:
 
     const int numChannels;
     std::array<std::atomic<float>, maxChannels> peaks {};
+
+    std::atomic<float>& peak (int channel) noexcept   { return peaks[static_cast<size_t> (channel)]; }
 
     JUCE_DECLARE_NON_COPYABLE (PeakMeter)
 };
