@@ -8,7 +8,6 @@ A JUCE audio plugin template for creating VST3, AU, and Standalone audio plugins
 - Modern C++23
 - Automatic JUCE dependency management via CPM
 - Binary asset support
-- Output level meter, mono or stereo from one setting
 - Plugin validation via pluginval, wired up as CTest tests
 - Unit tests with Catch2, run through CTest alongside pluginval
 
