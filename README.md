@@ -38,19 +38,6 @@ A JUCE audio plugin template for creating VST3, AU, and Standalone audio plugins
 - Asset names are derived from filenames
 - All assets are available in the `BinaryData` namespace
 
-## Mono or Stereo
-
-`Source/PluginConfig.h` holds one setting for the plugin's channel layout:
-
-```cpp
-inline constexpr auto channels = Channels::stereo;   // or Channels::mono
-```
-
-It decides which track layouts hosts can load the plugin on (a mono plugin won't load on a
-stereo track, and vice versa) and how many bars the output level meter shows. The meter
-(`Source/ui/LevelMeter.h`) reads peaks the processor collects after its gain, through
-`Source/dsp/PeakMeter.h`, and shows a clip light when the output goes over 0 dB.
-
 ## Prerequisites
 
 - CMake 3.25 or higher

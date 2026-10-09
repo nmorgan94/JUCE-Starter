@@ -54,7 +54,6 @@ void AudioPluginAudioProcessorEditor::resized()
     // This is generally where you'll want to lay out the positions of any
     // subcomponents in your editor..
 
-    // One 12px bar per channel, in the margin to the right of the text
     const auto meterWidth = 12 * PluginConfig::numChannels + 3 * (PluginConfig::numChannels - 1);
     outputMeter.setBounds (getLocalBounds().removeFromRight (50).withSizeKeepingCentre (meterWidth, 160));
 }
