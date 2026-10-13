@@ -51,6 +51,13 @@
       "description": "Build the plugin, pluginval and the unit tests",
       "configurePreset": "debug",
       "targets": ["all_tests"]
+    },
+    {
+      "name": "test-release",
+      "displayName": "All Tests Build (Release)",
+      "description": "Build the Release plugin, pluginval and the unit tests",
+      "configurePreset": "release",
+      "targets": ["all_tests"]
     }
   ],
   "testPresets": [

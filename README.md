@@ -106,6 +106,7 @@ checking parameters, audio output, bus layouts and state save/restore.
 ```bash
 cmake --build --preset unit && ctest --preset unit    # builds and runs the unit tests
 cmake --build --preset test && ctest --preset debug   # same, plus pluginval
+cmake --build --preset test-release && ctest --preset release   # all tests against a Release build
 ```
 
 Like pluginval, the tests are not part of a plain build (`cmake --build --preset debug` builds only

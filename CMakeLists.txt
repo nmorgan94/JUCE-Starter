@@ -51,11 +51,11 @@ juce_add_plugin(${PROJECT_NAME}
         COPY_PLUGIN_AFTER_BUILD
           TRUE
         PLUGIN_MANUFACTURER_CODE
-          Sprm
+          Cmpy
         PLUGIN_CODE
           Plgn
         VERSION 
-          0.0.0
+          0.0.1
         FORMATS
           VST3
           AU

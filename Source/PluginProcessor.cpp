@@ -92,6 +92,11 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     juce::ignoreUnused (sampleRate, samplesPerBlock);
 }
 
+void AudioPluginAudioProcessor::numChannelsChanged()
+{
+    outputMeter.setNumChannels (getTotalNumOutputChannels());
+}
+
 void AudioPluginAudioProcessor::releaseResources()
 {
     // When playback stops, you can use this as an opportunity to free up any
@@ -155,6 +160,8 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         juce::FloatVectorOperations::multiply (channelData, gainLinear,
                                                buffer.getNumSamples());
     }
+
+    outputMeter.process (buffer);
 }
 
 //==============================================================================

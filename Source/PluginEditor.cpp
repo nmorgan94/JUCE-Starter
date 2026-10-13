@@ -6,6 +6,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     : AudioProcessorEditor (&p), processorRef (p)
 {
     setLookAndFeel (&customLookAndFeel);
+    addAndMakeVisible (outputMeter);
 
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
@@ -53,4 +54,6 @@ void AudioPluginAudioProcessorEditor::resized()
     // This is generally where you'll want to lay out the positions of any
     // subcomponents in your editor..
 
+    outputMeter.setBounds (getLocalBounds().removeFromRight (50)
+                               .withSizeKeepingCentre (LevelMeter::preferredWidth, 160));
 }

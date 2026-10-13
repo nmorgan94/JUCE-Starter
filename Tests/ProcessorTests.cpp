@@ -42,6 +42,9 @@ TEST_CASE_METHOD (ProcessorFixture, "Master gain scales the signal", "[dsp][gain
     {
         CHECK_THAT (buffer.getSample (channel, 0), WithinAbs (input * expectedGain, 1.0e-4));
         CHECK_THAT (buffer.getSample (channel, blockSize - 1), WithinAbs (input * expectedGain, 1.0e-4));
+
+        // The output meter reads the signal after the gain
+        CHECK_THAT (processor.getOutputMeter().readAndReset (channel), WithinAbs (input * expectedGain, 1.0e-4));
     }
 }
 
@@ -81,6 +84,26 @@ TEST_CASE_METHOD (ProcessorFixture, "Only matching mono or stereo layouts are su
     CHECK_FALSE (processor.isBusesLayoutSupported ({ { Set::mono() },   { Set::stereo() } }));
     CHECK_FALSE (processor.isBusesLayoutSupported ({ { Set::stereo() }, { Set::mono() } }));
     CHECK_FALSE (processor.isBusesLayoutSupported ({ { Set::create5point1() }, { Set::create5point1() } }));
+}
+
+TEST_CASE_METHOD (ProcessorFixture, "Output meter follows the bus layout", "[buses][meter]")
+{
+    using Set = juce::AudioChannelSet;
+
+    const auto changeLayout = [this] (const Set& set)
+    {
+        processor.releaseResources();
+        REQUIRE (processor.setBusesLayout ({ { set }, { set } }));
+        processor.prepareToPlay (sampleRate, blockSize);
+    };
+
+    CHECK (processor.getOutputMeter().getNumChannels() == 2);
+
+    changeLayout (Set::mono());
+    CHECK (processor.getOutputMeter().getNumChannels() == 1);
+
+    changeLayout (Set::stereo());
+    CHECK (processor.getOutputMeter().getNumChannels() == 2);
 }
 
 //==============================================================================

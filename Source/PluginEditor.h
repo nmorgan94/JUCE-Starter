@@ -2,6 +2,7 @@
 
 #include "PluginProcessor.h"
 #include "ui/CustomLookAndFeel.h"
+#include "ui/LevelMeter.h"
 // #include <BinaryData.h> add BinaryData here
 
 //==============================================================================
@@ -21,6 +22,8 @@ private:
     AudioPluginAudioProcessor& processorRef;
 
     CustomLookAndFeel customLookAndFeel;
+
+    LevelMeter outputMeter { processorRef.getOutputMeter() };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessorEditor)
 };
