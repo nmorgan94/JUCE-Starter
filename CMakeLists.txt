@@ -33,6 +33,14 @@ CPMAddPackage(
     juce-framework/JUCE
 )
 
+# Windows' VST3 folder needs admin, so copying is opt-in there
+if(WIN32)
+    set(copyDefault OFF)
+else()
+    set(copyDefault ON)
+endif()
+option(PLUGIN_COPY_AFTER_BUILD "Copy the plugin into the system plug-in folders after building" ${copyDefault})
+
 juce_add_plugin(${PROJECT_NAME}
         COMPANY_NAME
           CompanyName
@@ -49,7 +57,7 @@ juce_add_plugin(${PROJECT_NAME}
         JUCE_VST3_CAN_REPLACE_VST2
           FALSE
         COPY_PLUGIN_AFTER_BUILD
-          TRUE
+          ${PLUGIN_COPY_AFTER_BUILD}
         PLUGIN_MANUFACTURER_CODE
           Cmpy
         PLUGIN_CODE
