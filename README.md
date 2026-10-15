@@ -1,10 +1,11 @@
 # JuceStarter
 
-A JUCE audio plugin template for creating VST3, AU, and Standalone audio plugins.
+A JUCE audio plugin template for creating VST3, AU, and Standalone audio plugins on macOS and Windows.
 
 ## Features
 
-- VST3, AU, and Standalone formats
+- VST3, AU (macOS only), and Standalone formats
+- Builds on macOS and Windows with the same preset commands
 - Modern C++23
 - Automatic JUCE dependency management via CPM
 - Binary asset support
@@ -41,6 +42,8 @@ A JUCE audio plugin template for creating VST3, AU, and Standalone audio plugins
 
 - CMake 3.25 or higher
 - C++23 compatible compiler:
+  - **macOS**: Xcode
+  - **Windows**: Visual Studio 2022 with the "Desktop development with C++" workload
 - Git (for downloading JUCE)
 
 ## Building
@@ -72,12 +75,22 @@ open build-debug/JuceStarter_artefacts/Debug/Standalone/JuceStarter.app
 open build-release/JuceStarter_artefacts/Release/Standalone/JuceStarter.app
 ```
 
+**Windows:**
+```powershell
+# Debug version
+build-debug\JuceStarter_artefacts\Debug\Standalone\JuceStarter.exe
+
+# Release version
+build-release\JuceStarter_artefacts\Release\Standalone\JuceStarter.exe
+```
+
 ### What Happens During Build
 
 1. **First time only**: CMake downloads JUCE, pluginval and Catch2 automatically via CPM
    (configure with `-DENABLE_PLUGINVAL=OFF -DENABLE_UNIT_TESTS=OFF` to fetch only JUCE)
 2. **Every build**: Compiles your plugin in the selected configuration
-3. **If `COPY_PLUGIN_AFTER_BUILD` is enabled**: Installs plugins to system directories
+3. **If `PLUGIN_COPY_AFTER_BUILD` is on**: Installs plugins to system directories
+   (see [System Installation](#system-installation))
 
 ## Debugging in Xcode
 
@@ -131,13 +144,16 @@ Logs land in `build-debug/pluginval-logs/`. Strictness defaults to 10; use
 pluginval entirely.
 
 The AU test validates the installed component in `~/Library/Audio/Plug-Ins/Components`, since macOS
-resolves Audio Units through its registry rather than by path — so it needs `COPY_PLUGIN_AFTER_BUILD`
-left on. Steinberg's VST3 conformance validator is off by default, as it pulls ~300MB of SDK for one
+resolves Audio Units through its registry rather than by path — so it needs `PLUGIN_COPY_AFTER_BUILD`
+left on. On Windows there is no AU, so only the VST3 test runs. Steinberg's VST3 conformance validator is off by default, as it pulls ~300MB of SDK for one
 extra test; enable it with `-DPLUGINVAL_VST3_VALIDATOR=ON`.
 
 ## Plugin Locations
 
 ### Build Artifacts
+
+Paths are shown for macOS. On Windows the Standalone is `JuceStarter.exe` instead of `JuceStarter.app`,
+and there is no AU.
 
 **Debug Build:**
 - Standalone: `build-debug/JuceStarter_artefacts/Debug/Standalone/JuceStarter.app`
@@ -149,11 +165,24 @@ extra test; enable it with `-DPLUGINVAL_VST3_VALIDATOR=ON`.
 - AU: `build-release/JuceStarter_artefacts/Release/AU/JuceStarter.component`
 - VST3: `build-release/JuceStarter_artefacts/Release/VST3/JuceStarter.vst3`
 
-### System Installation (if `COPY_PLUGIN_AFTER_BUILD` is enabled)
+### System Installation
+
+`PLUGIN_COPY_AFTER_BUILD` copies the plugin here after each build. It is on by default on macOS and
+off by default on Windows, where the VST3 folder needs administrator rights.
 
 **macOS:**
 - **VST3**: `~/Library/Audio/Plug-Ins/VST3/JuceStarter.vst3`
 - **AU**: `~/Library/Audio/Plug-Ins/Components/JuceStarter.component`
+
+**Windows:**
+- **VST3**: `C:\Program Files\Common Files\VST3\JuceStarter.vst3`
+
+To install on Windows, copy the `.vst3` there yourself, or reconfigure from an administrator prompt
+with the copy turned on:
+```powershell
+cmake --preset debug -DPLUGIN_COPY_AFTER_BUILD=ON
+cmake --build --preset debug
+```
 
 
 ## Customization
