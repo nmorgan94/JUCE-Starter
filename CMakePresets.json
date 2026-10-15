@@ -63,6 +63,27 @@
       "configurePreset": "release",
       "configuration": "Release",
       "targets": ["all_tests"]
+    },
+    {
+      "name": "run",
+      "displayName": "Run Standalone",
+      "description": "Build and launch the Debug Standalone app",
+      "configurePreset": "debug",
+      "configuration": "Debug",
+      "targets": ["run"]
+    },
+    {
+      "name": "install-windows",
+      "displayName": "Install VST3 (Windows)",
+      "description": "Build the Debug VST3 and copy it into Common Files\\VST3. Run from an administrator prompt",
+      "configurePreset": "debug",
+      "configuration": "Debug",
+      "targets": ["install_plugin"],
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
     }
   ],
   "testPresets": [
@@ -105,6 +126,51 @@
       "inherits": "test-base",
       "configurePreset": "release",
       "configuration": "Release"
+    }
+  ],
+  "workflowPresets": [
+    {
+      "name": "debug",
+      "displayName": "Build (Debug)",
+      "steps": [
+        { "type": "configure", "name": "debug" },
+        { "type": "build", "name": "debug" }
+      ]
+    },
+    {
+      "name": "release",
+      "displayName": "Build (Release)",
+      "steps": [
+        { "type": "configure", "name": "release" },
+        { "type": "build", "name": "release" }
+      ]
+    },
+    {
+      "name": "unit",
+      "displayName": "Unit Tests",
+      "steps": [
+        { "type": "configure", "name": "debug" },
+        { "type": "build", "name": "unit" },
+        { "type": "test", "name": "unit" }
+      ]
+    },
+    {
+      "name": "test",
+      "displayName": "All Tests (Debug)",
+      "steps": [
+        { "type": "configure", "name": "debug" },
+        { "type": "build", "name": "test" },
+        { "type": "test", "name": "debug" }
+      ]
+    },
+    {
+      "name": "test-release",
+      "displayName": "All Tests (Release)",
+      "steps": [
+        { "type": "configure", "name": "release" },
+        { "type": "build", "name": "test-release" },
+        { "type": "test", "name": "release" }
+      ]
     }
   ]
 }

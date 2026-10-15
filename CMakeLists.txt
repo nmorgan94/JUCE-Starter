@@ -123,6 +123,23 @@ target_link_libraries(${PROJECT_NAME}
         juce::juce_recommended_warning_flags
 )
 
+# Launches the Standalone the same way on macOS and Windows
+add_custom_target(run
+    COMMAND $<TARGET_FILE:${PROJECT_NAME}_Standalone>
+    DEPENDS ${PROJECT_NAME}_Standalone
+    USES_TERMINAL)
+
+# Windows installs on demand, since its VST3 folder needs an administrator prompt
+if(WIN32)
+    get_target_property(vst3Artefact ${PROJECT_NAME}_VST3 JUCE_PLUGIN_ARTEFACT_FILE)
+    get_target_property(vst3CopyDir  ${PROJECT_NAME}_VST3 JUCE_PLUGIN_COPY_DIR)
+    add_custom_target(install_plugin
+        COMMAND ${CMAKE_COMMAND} -E copy_directory "${vst3Artefact}"
+                "${vst3CopyDir}/$<TARGET_PROPERTY:${PROJECT_NAME},JUCE_PRODUCT_NAME>.vst3"
+        DEPENDS ${PROJECT_NAME}_VST3
+        COMMENT "Installing VST3 into ${vst3CopyDir}")
+endif()
+
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Pluginval.cmake)
 add_pluginval_tests(${PROJECT_NAME})
 

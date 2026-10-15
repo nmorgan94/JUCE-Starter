@@ -18,8 +18,7 @@ A JUCE audio plugin template for creating VST3, AU, and Standalone audio plugins
 1. Place your asset files in the `Assets/` directory
 2. Reconfigure and rebuild the project:
    ```bash
-   cmake --preset debug
-   cmake --build --preset debug
+   cmake --workflow --preset debug
    ```
 3. Access assets in your code:
    ```cpp
@@ -46,50 +45,40 @@ A JUCE audio plugin template for creating VST3, AU, and Standalone audio plugins
   - **Windows**: Visual Studio 2022 with the "Desktop development with C++" workload
 - Git (for downloading JUCE)
 
-## Building
+## Commands
 
-This project uses CMake Presets for easy Debug and Release builds.
+Every command is the same on macOS and Windows, except the rows marked **macOS** or **Windows**.
+Each workflow configures, builds and, for tests, runs in one go.
 
-### Quick Start (Recommended)
+| Task | Command |
+|---|---|
+| Build the plugin (Debug) | `cmake --workflow --preset debug` |
+| Build the plugin (Release) | `cmake --workflow --preset release` |
+| Run the unit tests | `cmake --workflow --preset unit` |
+| Run the unit tests and pluginval | `cmake --workflow --preset test` |
+| Run all tests against a Release build | `cmake --workflow --preset test-release` |
+| Launch the Standalone app (Debug) | `cmake --build --preset run` |
+| Install the plugin for your DAW: **macOS** | Automatic on every build |
+| Install the plugin for your DAW: **Windows** | `cmake --build --preset install-windows`, from an administrator prompt |
 
-**Debug Build:**
+`run` and `install-windows` use the Debug build, so run a Debug workflow such as
+`cmake --workflow --preset debug` once first.
+
+The individual steps still work on their own, for example to pass a `-D` option:
 ```bash
-cmake --preset debug
-cmake --build --preset debug
+cmake --preset debug -DPLUGINVAL_STRICTNESS=5   # configure
+cmake --build --preset test                     # build
+ctest --preset debug                            # test
 ```
 
-**Release Build:**
-```bash
-cmake --preset release
-cmake --build --preset release
-```
-
-### Running the Standalone App
-
-**macOS:**
-```bash
-# Debug version
-open build-debug/JuceStarter_artefacts/Debug/Standalone/JuceStarter.app
-
-# Release version
-open build-release/JuceStarter_artefacts/Release/Standalone/JuceStarter.app
-```
-
-**Windows:**
-```powershell
-# Debug version
-build-debug\JuceStarter_artefacts\Debug\Standalone\JuceStarter.exe
-
-# Release version
-build-release\JuceStarter_artefacts\Release\Standalone\JuceStarter.exe
-```
+`cmake --list-presets=all` lists every preset. `install-windows` only appears on Windows.
 
 ### What Happens During Build
 
 1. **First time only**: CMake downloads JUCE, pluginval and Catch2 automatically via CPM
    (configure with `-DENABLE_PLUGINVAL=OFF -DENABLE_UNIT_TESTS=OFF` to fetch only JUCE)
 2. **Every build**: Compiles your plugin in the selected configuration
-3. **If `PLUGIN_COPY_AFTER_BUILD` is on**: Installs plugins to system directories
+3. **macOS only, by default**: Installs plugins to system directories
    (see [System Installation](#system-installation))
 
 ## Debugging in Xcode
@@ -117,13 +106,12 @@ Unit tests live in `Tests/` and use [Catch2](https://github.com/catchorg/Catch2)
 checking parameters, audio output, bus layouts and state save/restore.
 
 ```bash
-cmake --build --preset unit && ctest --preset unit    # builds and runs the unit tests
-cmake --build --preset test && ctest --preset debug   # same, plus pluginval
-cmake --build --preset test-release && ctest --preset release   # all tests against a Release build
+cmake --workflow --preset unit           # builds and runs the unit tests
+cmake --workflow --preset test           # same, plus pluginval
+cmake --workflow --preset test-release   # all tests against a Release build
 ```
 
-Like pluginval, the tests are not part of a plain build (`cmake --build --preset debug` builds only
-the plugin), so build with the `unit` or `test` preset before running `ctest`.
+Like pluginval, the tests are not part of a plain build: the `debug` workflow builds only the plugin.
 
 Add a `.cpp` file to `Tests/` and reconfigure to pick it up. `Tests/TestHelpers.h` has helpers for
 setting parameters and processing buffers. Set `-DENABLE_UNIT_TESTS=OFF` to skip them entirely.
@@ -167,22 +155,17 @@ and there is no AU.
 
 ### System Installation
 
-`PLUGIN_COPY_AFTER_BUILD` copies the plugin here after each build. It is on by default on macOS and
-off by default on Windows, where the VST3 folder needs administrator rights.
-
-**macOS:**
+**macOS**: copied automatically after every build. Turn this off with
+`-DPLUGIN_COPY_AFTER_BUILD=OFF`, though the AU pluginval test then skips.
 - **VST3**: `~/Library/Audio/Plug-Ins/VST3/JuceStarter.vst3`
 - **AU**: `~/Library/Audio/Plug-Ins/Components/JuceStarter.component`
 
-**Windows:**
-- **VST3**: `C:\Program Files\Common Files\VST3\JuceStarter.vst3`
-
-To install on Windows, copy the `.vst3` there yourself, or reconfigure from an administrator prompt
-with the copy turned on:
+**Windows**: installed on demand, because the VST3 folder needs administrator rights. From an
+administrator prompt, after a Debug build:
 ```powershell
-cmake --preset debug -DPLUGIN_COPY_AFTER_BUILD=ON
-cmake --build --preset debug
+cmake --build --preset install-windows
 ```
+- **VST3**: `C:\Program Files\Common Files\VST3\JuceStarter.vst3`
 
 
 ## Customization
