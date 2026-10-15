@@ -31,18 +31,21 @@
     {
       "name": "debug",
       "displayName": "Debug Build",
-      "configurePreset": "debug"
+      "configurePreset": "debug",
+      "configuration": "Debug"
     },
     {
       "name": "release",
       "displayName": "Release Build",
-      "configurePreset": "release"
+      "configurePreset": "release",
+      "configuration": "Release"
     },
     {
       "name": "unit",
       "displayName": "Unit Tests Build",
       "description": "Build the Catch2 unit tests (and the plugin code they link)",
       "configurePreset": "debug",
+      "configuration": "Debug",
       "targets": ["unit_tests"]
     },
     {
@@ -50,6 +53,7 @@
       "displayName": "All Tests Build",
       "description": "Build the plugin, pluginval and the unit tests",
       "configurePreset": "debug",
+      "configuration": "Debug",
       "targets": ["all_tests"]
     },
     {
@@ -57,6 +61,7 @@
       "displayName": "All Tests Build (Release)",
       "description": "Build the Release plugin, pluginval and the unit tests",
       "configurePreset": "release",
+      "configuration": "Release",
       "targets": ["all_tests"]
     }
   ],
@@ -77,7 +82,8 @@
       "displayName": "Debug Tests",
       "description": "Run the unit tests and pluginval against the Debug build",
       "inherits": "test-base",
-      "configurePreset": "debug"
+      "configurePreset": "debug",
+      "configuration": "Debug"
     },
     {
       "name": "unit",
@@ -85,6 +91,7 @@
       "description": "Run only the Catch2 unit tests against the Debug build (skips pluginval)",
       "inherits": "test-base",
       "configurePreset": "debug",
+      "configuration": "Debug",
       "filter": {
         "include": {
           "name": "\\.unit\\."
@@ -96,7 +103,8 @@
       "displayName": "Release Tests",
       "description": "Run the unit tests and pluginval against the Release build",
       "inherits": "test-base",
-      "configurePreset": "release"
+      "configurePreset": "release",
+      "configuration": "Release"
     }
   ]
 }
