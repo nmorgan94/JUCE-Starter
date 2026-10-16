@@ -7,24 +7,26 @@
   },
   "configurePresets": [
     {
+      "name": "base",
+      "hidden": true,
+      "binaryDir": "${sourceDir}/build-${presetName}",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
       "name": "debug",
       "displayName": "Debug",
       "description": "Debug build with symbols",
-      "binaryDir": "${sourceDir}/build-debug",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-      }
+      "inherits": "base",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
     },
     {
       "name": "release",
       "displayName": "Release",
       "description": "Release build with optimizations",
-      "binaryDir": "${sourceDir}/build-release",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-      }
+      "inherits": "base",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
     }
   ],
   "buildPresets": [
@@ -44,65 +46,51 @@
       "name": "unit",
       "displayName": "Unit Tests Build",
       "description": "Build the Catch2 unit tests (and the plugin code they link)",
-      "configurePreset": "debug",
-      "configuration": "Debug",
+      "inherits": "debug",
       "targets": ["unit_tests"]
     },
     {
       "name": "test",
       "displayName": "All Tests Build",
       "description": "Build the plugin, pluginval and the unit tests",
-      "configurePreset": "debug",
-      "configuration": "Debug",
+      "inherits": "debug",
       "targets": ["all_tests"]
     },
     {
       "name": "test-release",
       "displayName": "All Tests Build (Release)",
       "description": "Build the Release plugin, pluginval and the unit tests",
-      "configurePreset": "release",
-      "configuration": "Release",
+      "inherits": "release",
       "targets": ["all_tests"]
     },
     {
       "name": "run",
       "displayName": "Run Standalone",
       "description": "Build and launch the Debug Standalone app",
-      "configurePreset": "debug",
-      "configuration": "Debug",
+      "inherits": "debug",
       "targets": ["run"]
     },
     {
       "name": "install-windows",
       "displayName": "Install VST3 (Windows)",
       "description": "Build the Debug VST3 and copy it into Common Files\\VST3. Run from an administrator prompt",
-      "configurePreset": "debug",
-      "configuration": "Debug",
+      "inherits": "debug",
       "targets": ["install_plugin"],
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Windows"
-      }
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" }
     }
   ],
   "testPresets": [
     {
-      "name": "test-base",
+      "name": "base",
       "hidden": true,
-      "output": {
-        "outputOnFailure": true
-      },
-      "execution": {
-        "noTestsAction": "error",
-        "jobs": 0
-      }
+      "output": { "outputOnFailure": true },
+      "execution": { "noTestsAction": "error", "jobs": 0 }
     },
     {
       "name": "debug",
       "displayName": "Debug Tests",
       "description": "Run the unit tests and pluginval against the Debug build",
-      "inherits": "test-base",
+      "inherits": "base",
       "configurePreset": "debug",
       "configuration": "Debug"
     },
@@ -110,20 +98,14 @@
       "name": "unit",
       "displayName": "Unit Tests",
       "description": "Run only the Catch2 unit tests against the Debug build (skips pluginval)",
-      "inherits": "test-base",
-      "configurePreset": "debug",
-      "configuration": "Debug",
-      "filter": {
-        "include": {
-          "name": "\\.unit\\."
-        }
-      }
+      "inherits": "debug",
+      "filter": { "include": { "name": "\\.unit\\." } }
     },
     {
       "name": "release",
       "displayName": "Release Tests",
       "description": "Run the unit tests and pluginval against the Release build",
-      "inherits": "test-base",
+      "inherits": "base",
       "configurePreset": "release",
       "configuration": "Release"
     }
