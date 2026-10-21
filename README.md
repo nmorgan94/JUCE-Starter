@@ -55,6 +55,7 @@ Each workflow configures, builds and, for tests, runs in one go.
 | Build the plugin (Debug) | `cmake --workflow --preset debug` |
 | Build the plugin (Release) | `cmake --workflow --preset release` |
 | Run the unit tests | `cmake --workflow --preset unit` |
+| Run the unit tests against a Release build | `cmake --workflow --preset unit-release` |
 | Run the unit tests and pluginval | `cmake --workflow --preset test` |
 | Run all tests against a Release build | `cmake --workflow --preset test-release` |
 | Launch the Standalone app (Debug) | `cmake --build --preset run` |
@@ -99,7 +100,7 @@ plugin inside a host:
 Unit tests live in `Tests/` and use [Catch2](https://github.com/catchorg/Catch2). They build into a
 `JuceStarter_Tests` executable that links the plugin's code and drives the processor directly,
 checking parameters, audio output, bus layouts and state save/restore. Run them with the `unit`,
-`test` or `test-release` workflow (see [Commands](#commands)).
+`unit-release`, `test` or `test-release` workflow (see [Commands](#commands)).
 
 Like pluginval, the tests are not part of a plain build: the `debug` workflow builds only the plugin.
 
@@ -125,6 +126,15 @@ The AU test validates the installed component in `~/Library/Audio/Plug-Ins/Compo
 resolves Audio Units through its registry rather than by path - so it needs `PLUGIN_COPY_AFTER_BUILD`
 left on. Steinberg's VST3 conformance validator is off by default, as it pulls ~300MB of SDK for one
 extra test; enable it with `-DPLUGINVAL_VST3_VALIDATOR=ON`.
+
+## CI
+
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) builds the Release plugin on macOS and Windows
+and runs the unit tests (not pluginval). It only runs when started by hand: **Actions → CI → Run
+workflow** on GitHub, or `gh workflow run ci.yml`.
+
+Each run's page lists the plugins under **Artifacts** for 30 days: `JuceStarter-macOS.tar.gz` (VST3
+and AU) and `JuceStarter-Windows.tar.gz` (VST3). They are unsigned.
 
 ## Plugin Locations
 

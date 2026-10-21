@@ -72,6 +72,13 @@
       "targets": ["all_tests"]
     },
     {
+      "name": "unit-release",
+      "displayName": "Unit Tests Build (Release)",
+      "description": "Build the Catch2 unit tests against the Release plugin code",
+      "inherits": "release",
+      "targets": ["unit_tests"]
+    },
+    {
       "name": "run",
       "displayName": "Run Standalone",
       "description": "Build and launch the Debug Standalone app",
@@ -116,6 +123,13 @@
       "inherits": "base",
       "configurePreset": "release",
       "configuration": "Release"
+    },
+    {
+      "name": "unit-release",
+      "displayName": "Unit Tests (Release)",
+      "description": "Run only the Catch2 unit tests against the Release build (skips pluginval)",
+      "inherits": "release",
+      "filter": { "include": { "name": "\\.unit\\." } }
     }
   ],
   "workflowPresets": [
@@ -142,6 +156,15 @@
         { "type": "configure", "name": "debug" },
         { "type": "build", "name": "unit" },
         { "type": "test", "name": "unit" }
+      ]
+    },
+    {
+      "name": "unit-release",
+      "displayName": "Unit Tests (Release)",
+      "steps": [
+        { "type": "configure", "name": "release" },
+        { "type": "build", "name": "unit-release" },
+        { "type": "test", "name": "unit-release" }
       ]
     },
     {
