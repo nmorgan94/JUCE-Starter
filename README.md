@@ -130,8 +130,9 @@ extra test; enable it with `-DPLUGINVAL_VST3_VALIDATOR=ON`.
 ## CI
 
 [`.github/workflows/ci.yml`](.github/workflows/ci.yml) builds the Release plugin on macOS and Windows
-and runs the unit tests (not pluginval). It only runs when started by hand: **Actions → CI → Run
-workflow** on GitHub, or `gh workflow run ci.yml`.
+and runs the unit tests. It only runs when started by hand: **Actions → CI → Run workflow** on
+GitHub, or `gh workflow run ci.yml`. Tick **Also run pluginval** (or pass `-f pluginval=true`) to
+validate the plugin too, which takes longer.
 
 Each run's page lists the plugins under **Artifacts** for 30 days: `JuceStarter-macOS.tar.gz` (VST3
 and AU) and `JuceStarter-Windows.tar.gz` (VST3). They are unsigned.
