@@ -73,6 +73,9 @@ namespace TestHelpers
     {
         ProcessorFixture()
         {
+            // A host sets these before preparing, and a processor may read them back through
+            // getSampleRate() while preparing. Without this they stay 0
+            processor.setRateAndBufferSizeDetails (sampleRate, blockSize);
             processor.prepareToPlay (sampleRate, blockSize);
         }
 
