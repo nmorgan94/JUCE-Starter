@@ -36,7 +36,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
 
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
-    setSize (400, 300);
+    setSize (width, height);
 }
 
 AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor()
@@ -64,10 +64,9 @@ void AudioPluginAudioProcessorEditor::resized()
     const auto titleWidth = juce::GlyphArrangement::getStringWidth (title.getFont(), title.getText());
     title.setBounds (titleBar.withTrimmedLeft (12).withWidth (static_cast<int> (std::ceil (titleWidth))));
     versionTip.setBounds (title.getX(), titleBar.getBottom() + 4, versionTip.getIdealWidth(), 22);
-    presetBar.setBounds (titleBar.withLeft (152).withTrimmedRight (12).reduced (0, 4));
-
-    outputMeter.setBounds (bounds.removeFromRight (50)
-                               .withSizeKeepingCentre (LevelMeter::preferredWidth, 160));
+    auto bar = titleBar.withTrimmedRight (12);
+    outputMeter.setBounds (bar.removeFromRight (LevelMeter::preferredWidth).reduced (0, 4));
+    presetBar.setBounds (bar.withLeft (152).withTrimmedRight (12).reduced (0, 10));
 
     auto knobArea = bounds.withSizeKeepingCentre (140, 190);
     gainLabel.setBounds (knobArea.removeFromTop (24));

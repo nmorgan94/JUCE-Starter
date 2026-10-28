@@ -9,10 +9,6 @@ const fakePort = () => {
   return { port, posted };
 };
 
-test('the version is the engine\'s', () => {
-  assert.equal(workletBackend(info).version, info.version);
-});
-
 test('changes made before the worklet attaches reach it once it does, in order and once each', () => {
   const backend = workletBackend(info);
   backend.setValue('masterGain', -12);

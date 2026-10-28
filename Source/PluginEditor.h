@@ -11,6 +11,8 @@
 class AudioPluginAudioProcessorEditor final : public juce::AudioProcessorEditor
 {
 public:
+    static constexpr int width = 440, height = 312;
+
     explicit AudioPluginAudioProcessorEditor (AudioPluginAudioProcessor&);
     ~AudioPluginAudioProcessorEditor() override;
 
@@ -19,7 +21,7 @@ public:
     void resized() override;
 
 private:
-    static constexpr int titleHeight = 32;
+    static constexpr int titleHeight = 44;
 
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.

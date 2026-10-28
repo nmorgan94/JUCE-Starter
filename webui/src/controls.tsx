@@ -28,15 +28,15 @@ function RotaryGraphic({ width, height, proportion }: { width: number; height: n
   const lineWidth = Math.min(8, radius * 0.5);
   const arcRadius = radius - lineWidth * 0.5;
   const toAngle = ROTARY_START + proportion * (ROTARY_END - ROTARY_START);
-  const [thumbX, thumbY] = pointAt(cx, cy, arcRadius, toAngle);
+  const [dotX, dotY] = pointAt(cx, cy, arcRadius, toAngle);
 
   return (
     <svg width={width} height={height} aria-hidden>
       <path d={arcPath(cx, cy, arcRadius, ROTARY_START, ROTARY_END)} stroke="var(--color-widget)" strokeWidth={lineWidth} strokeLinecap="round" fill="none" />
       {proportion > 0 && (
-        <path d={arcPath(cx, cy, arcRadius, ROTARY_START, toAngle)} stroke="var(--color-track)" strokeWidth={lineWidth} strokeLinecap="round" fill="none" />
+        <path d={arcPath(cx, cy, arcRadius, ROTARY_START, toAngle)} stroke="var(--color-thumb)" strokeWidth={lineWidth} strokeLinecap="round" fill="none" />
       )}
-      <circle cx={thumbX} cy={thumbY} r={lineWidth} fill="var(--color-thumb)" />
+      <circle cx={dotX} cy={dotY} r={lineWidth * 0.35} fill="var(--color-fg)" />
     </svg>
   );
 }

@@ -1,4 +1,5 @@
 #include "CustomLookAndFeel.h"
+#include "LevelMeter.h"
 #include "PromptOverlay.h"
 #include <BinaryData.h>
 #include <map>
@@ -36,6 +37,9 @@ CustomLookAndFeel::CustomLookAndFeel()
     setColour (PromptOverlay::dimColourId, scheme.getUIColour (UI::windowBackground).withAlpha (0.75f));
     setColour (PromptOverlay::panelColourId, scheme.getUIColour (UI::widgetBackground));
     setColour (PromptOverlay::outlineColourId, scheme.getUIColour (UI::outline));
+    setColour (LevelMeter::backgroundColourId, scheme.getUIColour (UI::windowBackground));
+
+    setColour (juce::Slider::rotarySliderFillColourId, scheme.getUIColour (UI::defaultFill));
 }
 
 juce::FontOptions CustomLookAndFeel::orbitron (float weight)
@@ -62,4 +66,38 @@ juce::Font CustomLookAndFeel::getTextButtonFont (juce::TextButton&, int)
 juce::Font CustomLookAndFeel::getPopupMenuFont()
 {
     return juce::Font (orbitron (regularWeight).withHeight (13.0f));
+}
+
+// LookAndFeel_V4's geometry
+void CustomLookAndFeel::drawRotarySlider (juce::Graphics& g, int x, int y, int width, int height,
+                                          float sliderPosProportional, float rotaryStartAngle,
+                                          float rotaryEndAngle, juce::Slider& slider)
+{
+    const auto bounds = juce::Rectangle<int> (x, y, width, height).toFloat().reduced (10.0f);
+    const auto centre = bounds.getCentre();
+    const auto radius = std::min (bounds.getWidth(), bounds.getHeight()) * 0.5f;
+    const auto lineWidth = std::min (8.0f, radius * 0.5f);
+    const auto arcRadius = radius - lineWidth * 0.5f;
+    const auto toAngle = rotaryStartAngle + sliderPosProportional * (rotaryEndAngle - rotaryStartAngle);
+
+    const auto strokeArc = [&] (float from, float to)
+    {
+        juce::Path arc;
+        arc.addCentredArc (centre.x, centre.y, arcRadius, arcRadius, 0.0f, from, to, true);
+        g.strokePath (arc, { lineWidth, juce::PathStrokeType::curved, juce::PathStrokeType::rounded });
+    };
+
+    g.setColour (slider.findColour (juce::Slider::rotarySliderOutlineColourId));
+    strokeArc (rotaryStartAngle, rotaryEndAngle);
+
+    if (slider.isEnabled() && sliderPosProportional > 0.0f)
+    {
+        g.setColour (slider.findColour (juce::Slider::rotarySliderFillColourId));
+        strokeArc (rotaryStartAngle, toAngle);
+    }
+
+    const auto dotRadius = lineWidth * 0.35f;
+    g.setColour (slider.findColour (juce::Slider::textBoxTextColourId));
+    g.fillEllipse (juce::Rectangle<float> (dotRadius * 2.0f, dotRadius * 2.0f)
+                       .withCentre (centre.getPointOnCircumference (arcRadius, toAngle)));
 }

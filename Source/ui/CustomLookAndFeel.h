@@ -26,10 +26,9 @@ public:
     juce::Font getTextButtonFont (juce::TextButton&, int buttonHeight) override;
     juce::Font getPopupMenuFont() override;
 
-    // Add your custom drawing overrides below, e.g.:
-    // void drawRotarySlider (juce::Graphics&, int x, int y, int width, int height,
-    //                        float sliderPosProportional, float rotaryStartAngle,
-    //                        float rotaryEndAngle, juce::Slider&) override { ... }
+    void drawRotarySlider (juce::Graphics&, int x, int y, int width, int height,
+                           float sliderPosProportional, float rotaryStartAngle,
+                           float rotaryEndAngle, juce::Slider&) override;
 
 private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (CustomLookAndFeel)

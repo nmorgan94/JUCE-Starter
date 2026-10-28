@@ -139,7 +139,7 @@ function Demo() {
   useEffect(() => () => void context.current?.close(), []);
 
   return (
-    <div className="mx-auto max-w-100" ref={ref}>
+    <div className="mx-auto" style={{ maxWidth: EDITOR_WIDTH }} ref={ref}>
       <div className="relative overflow-hidden rounded-xl" style={{ width: EDITOR_WIDTH * scale, height: EDITOR_HEIGHT * scale }}>
         <div className="origin-top-left" style={{ width: EDITOR_WIDTH, height: EDITOR_HEIGHT, transform: `scale(${scale})` }}>
           {engine && <Editor backend={engine.backend} />}

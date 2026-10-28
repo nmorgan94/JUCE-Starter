@@ -1,5 +1,6 @@
 // The page side of these names is webui/src/plugin/juceBackend.ts
 #include "WebViewEditor.h"
+#include "../PluginEditor.h"
 #include "../shared/ParameterSpecs.h"
 #include "../shared/UiInfoJson.h"
 #include "../ui/LevelMeter.h"
@@ -11,9 +12,6 @@
 
 namespace
 {
-    constexpr int editorWidth = 400;
-    constexpr int editorHeight = 300;
-
     const auto background = juce::LookAndFeel_V4::getDarkColourScheme()
                                 .getUIColour (juce::LookAndFeel_V4::ColourScheme::UIColour::windowBackground);
 
@@ -107,7 +105,7 @@ WebViewEditor::WebViewEditor (AudioPluginAudioProcessor& p)
     addAndMakeVisible (*browser);
     browser->goToURL (juce::WebBrowserComponent::getResourceProviderRoot());
 
-    setSize (editorWidth, editorHeight);
+    setSize (AudioPluginAudioProcessorEditor::width, AudioPluginAudioProcessorEditor::height);
     startTimerHz (LevelMeter::Ballistics::updateHz);
 }
 

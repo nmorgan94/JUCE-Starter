@@ -51,7 +51,7 @@ function BarView({ x, height, bar }: { x: number; height: number; bar: Bar }) {
   return (
     <g>
       <rect x={left} y={0.5} width={width} height={6} rx={2} fill={isClipping(bar) ? 'var(--color-clip)' : 'var(--color-line)'} />
-      <rect x={left} y={top} width={width} height={bodyHeight} rx={2} fill="var(--color-widget)" />
+      <rect x={left} y={top} width={width} height={bodyHeight} rx={2} fill="var(--color-background)" />
       {fillHeight > 0 && <rect x={left + 1} y={top + 1 + bodyHeight - 2 - fillHeight} width={width - 2} height={fillHeight} rx={1.5} fill="var(--color-thumb)" />}
       <rect x={left} y={top} width={width} height={bodyHeight} rx={2} fill="none" stroke="var(--color-line)" strokeWidth={1} />
     </g>

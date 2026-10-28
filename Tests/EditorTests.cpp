@@ -46,6 +46,28 @@ TEST_CASE_METHOD (ProcessorFixture, "Hovering the title shows the version", "[ed
     CHECK_FALSE (tip->isVisible());
 }
 
+TEST_CASE_METHOD (ProcessorFixture, "The gain knob draws its value in blue with a white dot", "[editor]")
+{
+    AudioPluginAudioProcessorEditor editor (processor);
+    auto* knob = dynamic_cast<juce::Slider*> (editor.findChildWithID (Parameters::masterGainId.getParamID()));
+    REQUIRE (knob != nullptr);
+    knob->setValue (knob->getMaximum());
+
+    // CustomLookAndFeel::drawRotarySlider's geometry
+    const auto bounds = knob->getLookAndFeel().getSliderLayout (*knob).sliderBounds.toFloat().reduced (10.0f);
+    const auto centre = bounds.getCentre();
+    const auto radius = std::min (bounds.getWidth(), bounds.getHeight()) * 0.5f;
+    const auto arcRadius = radius - std::min (8.0f, radius * 0.5f) * 0.5f;
+    const auto arc = centre.getPointOnCircumference (arcRadius, juce::MathConstants<float>::halfPi).toInt();
+    const auto dot = centre.getPointOnCircumference (arcRadius, knob->getRotaryParameters().endAngleRadians).toInt();
+
+    const auto image = knob->createComponentSnapshot (knob->getLocalBounds());
+
+    using UI = juce::LookAndFeel_V4::ColourScheme::UIColour;
+    CHECK (image.getPixelAt (arc.x, arc.y) == juce::LookAndFeel_V4::getDarkColourScheme().getUIColour (UI::defaultFill));
+    CHECK (image.getPixelAt (dot.x, dot.y) == knob->findColour (juce::Slider::textBoxTextColourId));
+}
+
 TEST_CASE_METHOD (ProcessorFixture, "The editor's text is Orbitron", "[editor][font]")
 {
     AudioPluginAudioProcessorEditor editor (processor);
