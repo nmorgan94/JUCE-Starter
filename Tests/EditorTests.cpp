@@ -68,6 +68,24 @@ TEST_CASE_METHOD (ProcessorFixture, "The editor's text is Orbitron", "[editor][f
         CAPTURE (label->getText());
         CHECK (editor.getLookAndFeel().getLabelFont (*label).getTypefacePtr()->getName() == "Orbitron");
     }
+
+    std::vector<juce::TextButton*> buttons;
+    for (auto* child : editor.getChildren())
+        if (dynamic_cast<PresetBar*> (child) != nullptr || dynamic_cast<PromptOverlay*> (child) != nullptr)
+            for (auto* grandchild : child->getChildren())
+                if (auto* button = dynamic_cast<juce::TextButton*> (grandchild))
+                    buttons.push_back (button);
+
+    // The preset bar's five and the prompt's two
+    REQUIRE (buttons.size() == 7);
+
+    for (auto* button : buttons)
+    {
+        CAPTURE (button->getButtonText());
+        CHECK (editor.getLookAndFeel().getTextButtonFont (*button, button->getHeight()).getTypefacePtr()->getName() == "Orbitron");
+    }
+
+    CHECK (editor.getLookAndFeel().getPopupMenuFont().getTypefacePtr()->getName() == "Orbitron");
 }
 
 TEST_CASE ("Orbitron's weights come from the one variable font", "[editor][font]")

@@ -4,6 +4,7 @@
 #include "Parameters.h"
 #include "dsp/Effect.h"
 #include "dsp/PeakMeter.h"
+#include "presets/PresetManager.h"
 
 //==============================================================================
 class AudioPluginAudioProcessor final : public juce::AudioProcessor
@@ -49,10 +50,14 @@ public:
     //==============================================================================
     juce::AudioProcessorValueTreeState& getAPVTS() { return apvts; }
     PeakMeter& getOutputMeter()                    { return outputMeter; }
+    PresetManager& getPresetManager()              { return presetManager; }
+
+    static PresetManager::Config createPresetConfig();
 
 private:
     juce::AudioProcessorValueTreeState apvts { *this, nullptr, "Parameters",
                                                Parameters::createLayout() };
+    PresetManager presetManager { apvts, createPresetConfig() };
 
     Effect effect;
 

@@ -23,8 +23,41 @@ export interface Level {
   peaks: number[];
 }
 
+export interface PresetEntry {
+  name: string;
+  category: string;
+  isFactory: boolean;
+}
+
+export interface PresetStatus {
+  current: PresetEntry;
+  modified: boolean;
+}
+
+// Mirrors Source/presets/PresetManager.h
+export interface PresetBackend {
+  status(): PresetStatus;
+  onStatus(listener: (status: PresetStatus) => void): () => void;
+  // Factory then user presets, rescanning the user ones
+  list(): Promise<PresetEntry[]>;
+  load(preset: PresetEntry): Promise<void>;
+  loadInit(): Promise<void>;
+  loadNext(): Promise<void>;
+  loadPrevious(): Promise<void>;
+  exists(name: string): Promise<boolean>;
+  // Each resolves to an error message, or null
+  save(name: string, category: string): Promise<string | null>;
+  rename(preset: PresetEntry, newName: string): Promise<string | null>;
+  remove(preset: PresetEntry): Promise<string | null>;
+  // Only where presets are files
+  showFolder?(): void;
+}
+
+export const isSamePreset = (a: PresetEntry, b: PresetEntry) => a.name === b.name && a.isFactory === b.isFactory;
+
 export interface PluginBackend {
   version: string;
+  presets: PresetBackend;
   param(id: string): ParamInfo;
   // Real values, not 0..1
   getValue(id: string): number;

@@ -1,6 +1,7 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 #include "shared/EffectSettings.h"
+#include <BinaryData.h>
 
 #if PLUGIN_WEBVIEW_EDITOR
  #include "webview/WebViewEditor.h"
@@ -21,6 +22,31 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
 
 AudioPluginAudioProcessor::~AudioPluginAudioProcessor()
 {
+}
+
+PresetManager::Config AudioPluginAudioProcessor::createPresetConfig()
+{
+    PresetManager::Config config;
+    config.fileExtension = ".srstarter";
+    config.userDirectory = PresetManager::getDefaultUserDirectory (JucePlugin_Manufacturer, JucePlugin_Name);
+    config.author        = JucePlugin_Manufacturer;
+    config.formatVersion = Parameters::versionHint;
+
+    // Factory presets are embedded from Assets/Presets alongside the font
+    for (int i = 0; i < BinaryData::namedResourceListSize; ++i)
+    {
+        const auto* resource = BinaryData::namedResourceList[i];
+
+        if (! juce::String (BinaryData::getNamedResourceOriginalFilename (resource)).endsWithIgnoreCase (config.fileExtension))
+            continue;
+
+        int size = 0;
+
+        if (const auto* data = BinaryData::getNamedResource (resource, size))
+            config.factoryPresets.emplace_back (data, (size_t) size);
+    }
+
+    return config;
 }
 
 //==============================================================================
@@ -64,7 +90,7 @@ double AudioPluginAudioProcessor::getTailLengthSeconds() const
 int AudioPluginAudioProcessor::getNumPrograms()
 {
     return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
-                // so this should be at least 1, even if you're not really implementing programs.
+                // so this should be at least 1. Presets are managed in the plugin UI instead.
 }
 
 int AudioPluginAudioProcessor::getCurrentProgram()
@@ -176,9 +202,11 @@ juce::AudioProcessorEditor* AudioPluginAudioProcessor::createEditor()
 //==============================================================================
 void AudioPluginAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
-    const auto state = apvts.copyState();
-    const auto xml   = state.createXml();
-    copyXmlToBinary (*xml, destData);
+    auto state = apvts.copyState();
+    presetManager.addPresetInfoTo (state);
+
+    if (const auto xml = state.createXml())
+        copyXmlToBinary (*xml, destData);
 }
 
 void AudioPluginAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
@@ -186,7 +214,7 @@ void AudioPluginAudioProcessor::setStateInformation (const void* data, int sizeI
     const auto xml = getXmlFromBinary (data, sizeInBytes);
 
     if (xml != nullptr && xml->hasTagName (apvts.state.getType()))
-        apvts.replaceState (juce::ValueTree::fromXml (*xml));
+        presetManager.restoreState (juce::ValueTree::fromXml (*xml));
 }
 
 //==============================================================================

@@ -48,6 +48,29 @@ namespace
         }
     };
 
+    juce::var toVar (const juce::String& name, const juce::String& category, bool isFactory)
+    {
+        auto entry = std::make_unique<juce::DynamicObject>();
+        entry->setProperty ("name", name);
+        entry->setProperty ("category", category);
+        entry->setProperty ("isFactory", isFactory);
+        return juce::var (entry.release());
+    }
+
+    juce::var presetStatus (const PresetManager& presets)
+    {
+        const auto current = presets.getCurrent();
+        auto status = std::make_unique<juce::DynamicObject>();
+        status->setProperty ("current", toVar (current.name, current.category, current.isFactory));
+        status->setProperty ("modified", presets.isModified());
+        return juce::var (status.release());
+    }
+
+    std::optional<PresetManager::Preset> findPreset (const PresetManager& presets, const juce::var& entry)
+    {
+        return presets.find (entry["name"].toString(), entry["isFactory"]);
+    }
+
     // The Mac web view is white until the page draws, and JUCE has no option for it
     void hideMacWebViewBackground ([[maybe_unused]] juce::WebBrowserComponent& browser)
     {
@@ -68,6 +91,7 @@ WebViewEditor::WebViewEditor (AudioPluginAudioProcessor& p)
     for (const auto* spec : ParameterSpecs::all)
         relays.push_back (std::make_unique<juce::WebSliderRelay> (spec->id));
 
+    lastPresetChange = processorRef.getPresetManager().getChangeCounter();
     browser = std::make_unique<SinglePageBrowser> (createOptions());
     hideMacWebViewBackground (*browser);
 
@@ -100,7 +124,84 @@ juce::WebBrowserComponent::Options WebViewEditor::createOptions()
     for (auto& relay : relays)
         options = options.withOptionsFrom (*relay);
 
-    return options.withInitialisationData ("uiInfo", juce::String (uiInfoJson (JucePlugin_VersionString)));
+    return withPresetFunctions (options)
+        .withInitialisationData ("uiInfo", juce::String (uiInfoJson (JucePlugin_VersionString)))
+        .withInitialisationData ("presetStatus", juce::JSON::toString (presetStatus (processorRef.getPresetManager()), true));
+}
+
+juce::WebBrowserComponent::Options WebViewEditor::withPresetFunctions (const juce::WebBrowserComponent::Options& options)
+{
+    using Args = juce::Array<juce::var>;
+    using Completion = juce::WebBrowserComponent::NativeFunctionCompletion;
+    auto& presets = processorRef.getPresetManager();
+
+    const auto userPresetCall = [&presets] (auto action)
+    {
+        return [&presets, action] (const Args& args, Completion complete)
+        {
+            const auto preset = findPreset (presets, args[0]);
+            complete (preset.has_value() ? action (*preset, args).getErrorMessage() : juce::String ("That preset no longer exists."));
+        };
+    };
+
+    return options
+        .withNativeFunction ("presetStatus", [&presets] (const Args&, Completion complete)
+        {
+            complete (presetStatus (presets));
+        })
+        .withNativeFunction ("presetList", [&presets] (const Args&, Completion complete)
+        {
+            presets.refreshUserPresets();
+
+            juce::Array<juce::var> list;
+
+            for (const auto& preset : presets.getPresets())
+                list.add (toVar (preset.name, preset.category, preset.isFactory));
+
+            complete (list);
+        })
+        .withNativeFunction ("presetLoad", [&presets] (const Args& args, Completion complete)
+        {
+            if (const auto preset = findPreset (presets, args[0]))
+                presets.loadPreset (*preset);
+
+            complete ({});
+        })
+        .withNativeFunction ("presetInit", [&presets] (const Args&, Completion complete)
+        {
+            presets.loadInit();
+            complete ({});
+        })
+        .withNativeFunction ("presetStep", [&presets] (const Args& args, Completion complete)
+        {
+            if (static_cast<int> (args[0]) > 0)
+                presets.loadNext();
+            else
+                presets.loadPrevious();
+
+            complete ({});
+        })
+        .withNativeFunction ("presetExists", [&presets] (const Args& args, Completion complete)
+        {
+            complete (presets.userPresetExists (args[0].toString()));
+        })
+        .withNativeFunction ("presetSave", [&presets] (const Args& args, Completion complete)
+        {
+            complete (presets.saveUserPreset (args[0].toString(), args[1].toString()).getErrorMessage());
+        })
+        .withNativeFunction ("presetRename", userPresetCall ([&presets] (const PresetManager::Preset& preset, const Args& args)
+        {
+            return presets.renameUserPreset (preset, args[1].toString());
+        }))
+        .withNativeFunction ("presetDelete", userPresetCall ([&presets] (const PresetManager::Preset& preset, const Args&)
+        {
+            return presets.deleteUserPreset (preset);
+        }))
+        .withNativeFunction ("presetShowFolder", [&presets] (const Args&, Completion complete)
+        {
+            presets.showUserDirectory();
+            complete ({});
+        });
 }
 
 std::optional<juce::WebBrowserComponent::Resource> WebViewEditor::getResource (const juce::String& url)
@@ -130,6 +231,14 @@ void WebViewEditor::timerCallback()
     auto level = std::make_unique<juce::DynamicObject>();
     level->setProperty ("peaks", peaks);
     browser->emitEventIfBrowserIsVisible ("level", juce::var (level.release()));
+
+    auto& presets = processorRef.getPresetManager();
+
+    if (const auto change = presets.getChangeCounter(); change != lastPresetChange && browser->isShowing())
+    {
+        lastPresetChange = change;
+        browser->emitEventIfBrowserIsVisible ("presetStatus", presetStatus (presets));
+    }
 }
 
 void WebViewEditor::paint (juce::Graphics& g)

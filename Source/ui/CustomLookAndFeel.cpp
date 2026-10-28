@@ -1,4 +1,5 @@
 #include "CustomLookAndFeel.h"
+#include "PromptOverlay.h"
 #include <BinaryData.h>
 #include <map>
 
@@ -27,6 +28,16 @@ namespace
 }
 
 //==============================================================================
+CustomLookAndFeel::CustomLookAndFeel()
+{
+    using UI = ColourScheme::UIColour;
+    const auto scheme = getCurrentColourScheme();
+
+    setColour (PromptOverlay::dimColourId, scheme.getUIColour (UI::windowBackground).withAlpha (0.75f));
+    setColour (PromptOverlay::panelColourId, scheme.getUIColour (UI::widgetBackground));
+    setColour (PromptOverlay::outlineColourId, scheme.getUIColour (UI::outline));
+}
+
 juce::FontOptions CustomLookAndFeel::orbitron (float weight)
 {
     return juce::FontOptions (orbitronTypeface (weight));
@@ -41,4 +52,14 @@ juce::Font CustomLookAndFeel::getLabelFont (juce::Label& label)
         return font;
 
     return juce::Font (orbitron (font.isBold() ? boldWeight : regularWeight).withHeight (font.getHeight()));
+}
+
+juce::Font CustomLookAndFeel::getTextButtonFont (juce::TextButton&, int)
+{
+    return juce::Font (orbitron (regularWeight).withHeight (12.0f));
+}
+
+juce::Font CustomLookAndFeel::getPopupMenuFont()
+{
+    return juce::Font (orbitron (regularWeight).withHeight (13.0f));
 }

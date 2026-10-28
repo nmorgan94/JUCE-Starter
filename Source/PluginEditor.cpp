@@ -13,6 +13,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     title.setJustificationType (juce::Justification::centredLeft);
     title.setBorderSize ({});
     addAndMakeVisible (title);
+    addAndMakeVisible (presetBar);
 
     gainLabel.setText ("GAIN", juce::dontSendNotification);
     gainLabel.setFont (CustomLookAndFeel::orbitron (CustomLookAndFeel::boldWeight).withHeight (16.0f));
@@ -29,6 +30,9 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
 
     versionTip.setComponentID ("versionTip");
     addChildComponent (versionTip);
+
+    prompt.setFont (CustomLookAndFeel::orbitron (CustomLookAndFeel::regularWeight).withHeight (14.0f));
+    addChildComponent (prompt);
 
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
@@ -60,6 +64,7 @@ void AudioPluginAudioProcessorEditor::resized()
     const auto titleWidth = juce::GlyphArrangement::getStringWidth (title.getFont(), title.getText());
     title.setBounds (titleBar.withTrimmedLeft (12).withWidth (static_cast<int> (std::ceil (titleWidth))));
     versionTip.setBounds (title.getX(), titleBar.getBottom() + 4, versionTip.getIdealWidth(), 22);
+    presetBar.setBounds (titleBar.withLeft (152).withTrimmedRight (12).reduced (0, 4));
 
     outputMeter.setBounds (bounds.removeFromRight (50)
                                .withSizeKeepingCentre (LevelMeter::preferredWidth, 160));

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PRESET name="Cut -6" category="Cut" author="CompanyName" formatVersion="1">
+  <Parameters>
+    <PARAM id="masterGain" value="-6.0"/>
+  </Parameters>
+</PRESET>

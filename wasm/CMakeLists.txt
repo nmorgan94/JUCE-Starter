@@ -79,7 +79,7 @@ set(demoDir "${CMAKE_BINARY_DIR}/${pluginName}-${pluginVersion}")
 
 file(GLOB_RECURSE uiInputs CONFIGURE_DEPENDS
     "${uiDir}/src/*" "${uiDir}/public/demo/*" "${uiDir}/package*.json" "${uiDir}/vite.config.ts"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../Assets/*.ttf")
+    "${CMAKE_CURRENT_SOURCE_DIR}/../Assets/*.ttf" "${CMAKE_CURRENT_SOURCE_DIR}/../Assets/Presets/*.srstarter")
 list(FILTER uiInputs EXCLUDE REGEX "/src/plugin/")
 
 # npm writes this on every install

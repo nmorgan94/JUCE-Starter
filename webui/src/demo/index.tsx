@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { EDITOR_HEIGHT, EDITOR_WIDTH, Editor } from '../Editor.tsx';
 import { juceHeight } from '../fonts.ts';
+import { factoryPresets } from './factoryPresets.ts';
 import { makeLoop } from './loop.ts';
 import { loadEngine, workletBackend, type WorkletBackend } from './workletBackend.ts';
 import './styles.css';
@@ -13,6 +14,15 @@ const PROCESSOR_URL = 'processor.js';
 const CHANNELS = 2;
 
 const HEIGHT_MESSAGE = 'samplerealm-demo-height';
+
+// Blocked storage throws on access
+function browserStorage() {
+  try {
+    return window.localStorage;
+  } catch {
+    return undefined;
+  }
+}
 
 interface Audio {
   context: AudioContext;
@@ -101,7 +111,7 @@ function Demo() {
 
   useEffect(() => {
     loadEngine(ENGINE_URL)
-      .then(({ wasm, info }) => setEngine({ backend: workletBackend(info), wasm }))
+      .then(({ wasm, info }) => setEngine({ backend: workletBackend(info, factoryPresets, browserStorage()), wasm }))
       .catch((error) => {
         console.error('Demo failed to load:', error);
         setFailed(true);

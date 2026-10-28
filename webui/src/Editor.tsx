@@ -5,6 +5,8 @@ import { Rotary } from './controls.tsx';
 import { juceHeight } from './fonts.ts';
 import { LevelMeter, PREFERRED_WIDTH } from './LevelMeter.tsx';
 import { HoverTip } from './HoverTip.tsx';
+import { PresetBar } from './PresetBar.tsx';
+import { usePrompt } from './PromptOverlay.tsx';
 
 export const EDITOR_WIDTH = 400;
 export const EDITOR_HEIGHT = 300;
@@ -12,6 +14,7 @@ export const EDITOR_HEIGHT = 300;
 const TITLE_HEIGHT = 32;
 const TITLE = { left: 12, top: 0, height: TITLE_HEIGHT };
 const TIP = { left: TITLE.left, top: TITLE_HEIGHT + 4, height: 22 };
+const PRESET_BAR = { left: 152, top: 4, width: EDITOR_WIDTH - 12 - 152, height: TITLE_HEIGHT - 8 };
 const CONTENT_HEIGHT = EDITOR_HEIGHT - TITLE_HEIGHT;
 
 const METER_STRIP = 50;
@@ -27,6 +30,8 @@ const knobLeft = centred(EDITOR_WIDTH - METER_STRIP, KNOB_AREA.width);
 const knobTop = centred(CONTENT_HEIGHT, KNOB_AREA.height);
 
 export const Editor = memo(function Editor({ backend }: { backend: PluginBackend }) {
+  const { prompt, overlay } = usePrompt();
+
   return (
     <div className="relative bg-background" style={{ width: EDITOR_WIDTH, height: EDITOR_HEIGHT }}>
       <div className="absolute inset-x-0 top-0 bg-widget" style={{ height: TITLE_HEIGHT }} />
@@ -50,6 +55,8 @@ export const Editor = memo(function Editor({ backend }: { backend: PluginBackend
           JUCE STARTER
         </div>
       </HoverTip>
+      <PresetBar presets={backend.presets} prompt={prompt} bounds={PRESET_BAR} />
+      {overlay}
     </div>
   );
 });

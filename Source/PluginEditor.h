@@ -4,6 +4,8 @@
 #include "ui/CustomLookAndFeel.h"
 #include "ui/HoverTip.h"
 #include "ui/LevelMeter.h"
+#include "ui/PresetBar.h"
+#include "ui/PromptOverlay.h"
 
 //==============================================================================
 class AudioPluginAudioProcessorEditor final : public juce::AudioProcessorEditor
@@ -27,6 +29,9 @@ private:
 
     juce::Label title;
     HoverTip versionTip { title, "v" JucePlugin_VersionString };
+
+    PromptOverlay prompt;
+    PresetBar presetBar { processorRef.getPresetManager(), prompt };
 
     juce::Label gainLabel;
     juce::Slider gainKnob { juce::Slider::RotaryHorizontalVerticalDrag, juce::Slider::TextBoxBelow };

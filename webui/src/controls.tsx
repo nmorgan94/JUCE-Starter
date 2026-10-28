@@ -1,5 +1,5 @@
-// Mirrors juce::Slider and LookAndFeel_V4::drawRotarySlider
-import { useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+// Mirrors juce::Slider, juce::TextButton and how LookAndFeel_V4 draws them
+import { forwardRef, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
 import type { PluginBackend } from './backend.ts';
 import { juceHeight } from './fonts.ts';
 import { useParam } from './hooks.ts';
@@ -125,3 +125,24 @@ export function Rotary({ backend, id, width, height, textBox }: RotaryProps) {
     </div>
   );
 }
+
+interface TextButtonProps {
+  text: string;
+  style: CSSProperties;
+  onClick(): void;
+}
+
+// LookAndFeel_V4::drawButtonBackground lightens by 5% on hover and 20% while down
+export const TextButton = forwardRef<HTMLButtonElement, TextButtonProps>(function TextButton({ text, style, onClick }, ref) {
+  return (
+    <button
+      ref={ref}
+      type="button"
+      className="absolute cursor-pointer overflow-hidden rounded-md border border-line bg-widget px-1 text-ellipsis whitespace-nowrap text-fg hover:bg-[color-mix(in_srgb,var(--color-widget),white_5%)] active:bg-[color-mix(in_srgb,var(--color-widget),white_20%)]"
+      style={{ fontSize: juceHeight(12), ...style }}
+      onClick={onClick}
+    >
+      {text}
+    </button>
+  );
+});

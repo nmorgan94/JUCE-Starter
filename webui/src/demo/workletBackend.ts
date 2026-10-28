@@ -1,4 +1,5 @@
 import { paramLookup, type Level, type PluginBackend, type UiInfo } from '../backend.ts';
+import { localPresets, type PresetStorage, type StoredPreset } from './localPresets.ts';
 
 // WASI imports are never called
 export const stubImports = () => {
@@ -31,7 +32,7 @@ export type WorkletBackend = PluginBackend & {
   attach(port: EnginePort): void;
 };
 
-export function workletBackend(info: UiInfo): WorkletBackend {
+export function workletBackend(info: UiInfo, factoryPresets: StoredPreset[] = [], storage?: PresetStorage): WorkletBackend {
   const entry = paramLookup(new Map(info.params.map((param, index) => [param.id, { param, index, value: param.defaultValue }])));
   const listeners = new Map<string, Set<(value: number) => void>>();
   const levelListeners = new Set<(level: Level) => void>();
@@ -44,18 +45,31 @@ export function workletBackend(info: UiInfo): WorkletBackend {
     else pending.push(message);
   };
 
-  const setValue = (id: string, value: number) => {
+  const apply = (id: string, value: number) => {
     const found = entry(id);
     post({ type: 'param', index: found.index, value });
     found.value = value;
     listeners.get(id)?.forEach((listener) => listener(value));
   };
 
+  const presets = localPresets({
+    factory: factoryPresets,
+    storage,
+    defaults: Object.fromEntries(info.params.map((param) => [param.id, param.defaultValue])),
+    values: () => Object.fromEntries(info.params.map((param) => [param.id, entry(param.id).value])),
+    // Ids this engine doesn't have are skipped, as the APVTS skips them
+    apply: (values) => info.params.forEach(({ id }) => id in values && apply(id, values[id]!)),
+  });
+
   return {
     version: info.version,
+    presets,
     param: (id) => entry(id).param,
     getValue: (id) => entry(id).value,
-    setValue,
+    setValue: (id, value) => {
+      apply(id, value);
+      presets.markModified();
+    },
     beginGesture: () => {},
     endGesture: () => {},
     subscribe: (id, listener) => {

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PRESET name="Boost +3" category="Boost" author="CompanyName" formatVersion="1">
+  <Parameters>
+    <PARAM id="masterGain" value="3.0"/>
+  </Parameters>
+</PRESET>
