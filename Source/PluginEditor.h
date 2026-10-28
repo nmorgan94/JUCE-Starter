@@ -2,6 +2,7 @@
 
 #include "PluginProcessor.h"
 #include "ui/CustomLookAndFeel.h"
+#include "ui/HoverTip.h"
 #include "ui/LevelMeter.h"
 
 //==============================================================================
@@ -16,11 +17,16 @@ public:
     void resized() override;
 
 private:
+    static constexpr int titleHeight = 32;
+
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     AudioPluginAudioProcessor& processorRef;
 
     CustomLookAndFeel customLookAndFeel;
+
+    juce::Label title;
+    HoverTip versionTip { title, "v" JucePlugin_VersionString };
 
     juce::Label gainLabel;
     juce::Slider gainKnob { juce::Slider::RotaryHorizontalVerticalDrag, juce::Slider::TextBoxBelow };

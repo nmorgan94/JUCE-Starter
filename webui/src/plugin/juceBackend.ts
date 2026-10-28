@@ -15,6 +15,7 @@ export function juceBackend(): PluginBackend {
   const slider = (id: string) => entry(id).slider;
 
   return {
+    version: info.version,
     param,
     getValue: (id) => slider(id).getScaledValue(),
     setValue: (id, value) => slider(id).setNormalisedValue(toProportion(param(id), value)),

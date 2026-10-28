@@ -24,6 +24,7 @@ export interface Level {
 }
 
 export interface PluginBackend {
+  version: string;
   param(id: string): ParamInfo;
   // Real values, not 0..1
   getValue(id: string): number;

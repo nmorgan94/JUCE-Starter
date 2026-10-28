@@ -7,6 +7,13 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
 {
     setLookAndFeel (&customLookAndFeel);
 
+    title.setComponentID ("title");
+    title.setText ("JUCE STARTER", juce::dontSendNotification);
+    title.setFont (CustomLookAndFeel::orbitron (CustomLookAndFeel::boldWeight).withHeight (18.0f));
+    title.setJustificationType (juce::Justification::centredLeft);
+    title.setBorderSize ({});
+    addAndMakeVisible (title);
+
     gainLabel.setText ("GAIN", juce::dontSendNotification);
     gainLabel.setFont (CustomLookAndFeel::orbitron (CustomLookAndFeel::boldWeight).withHeight (16.0f));
     gainLabel.setJustificationType (juce::Justification::centred);
@@ -19,6 +26,9 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     addAndMakeVisible (gainKnob);
 
     addAndMakeVisible (outputMeter);
+
+    versionTip.setComponentID ("versionTip");
+    addChildComponent (versionTip);
 
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
@@ -35,6 +45,9 @@ void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
+
+    g.setColour (findColour (juce::Slider::backgroundColourId));
+    g.fillRect (getLocalBounds().removeFromTop (titleHeight));
 }
 
 void AudioPluginAudioProcessorEditor::resized()
@@ -42,6 +55,11 @@ void AudioPluginAudioProcessorEditor::resized()
     // This is generally where you'll want to lay out the positions of any
     // subcomponents in your editor..
     auto bounds = getLocalBounds();
+
+    const auto titleBar = bounds.removeFromTop (titleHeight);
+    const auto titleWidth = juce::GlyphArrangement::getStringWidth (title.getFont(), title.getText());
+    title.setBounds (titleBar.withTrimmedLeft (12).withWidth (static_cast<int> (std::ceil (titleWidth))));
+    versionTip.setBounds (title.getX(), titleBar.getBottom() + 4, versionTip.getIdealWidth(), 22);
 
     outputMeter.setBounds (bounds.removeFromRight (50)
                                .withSizeKeepingCentre (LevelMeter::preferredWidth, 160));

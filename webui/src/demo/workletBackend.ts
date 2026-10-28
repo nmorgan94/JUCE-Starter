@@ -52,6 +52,7 @@ export function workletBackend(info: UiInfo): WorkletBackend {
   };
 
   return {
+    version: info.version,
     param: (id) => entry(id).param,
     getValue: (id) => entry(id).value,
     setValue,

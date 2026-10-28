@@ -22,6 +22,30 @@ TEST_CASE_METHOD (ProcessorFixture, "The gain knob and the parameter follow each
     CHECK (knob->getTextFromValue (knob->getValue()) == "3.0 dB");
 }
 
+TEST_CASE_METHOD (ProcessorFixture, "Hovering the title shows the version", "[editor]")
+{
+    AudioPluginAudioProcessorEditor editor (processor);
+    auto* title = editor.findChildWithID ("title");
+    auto* tip = dynamic_cast<juce::Label*> (editor.findChildWithID ("versionTip"));
+    REQUIRE (title != nullptr);
+    REQUIRE (tip != nullptr);
+
+    CHECK (tip->getText() == "v" JucePlugin_VersionString);
+    CHECK_FALSE (tip->isVisible());
+
+    // Called directly: JUCE only routes mouse events to a window that's on top
+    const juce::MouseEvent event (juce::Desktop::getInstance().getMainMouseSource(), {}, {},
+                                  juce::MouseInputSource::defaultPressure, 0.0f, 0.0f, 0.0f, 0.0f,
+                                  title, title, juce::Time::getCurrentTime(), {}, juce::Time::getCurrentTime(),
+                                  0, false);
+
+    tip->mouseEnter (event);
+    CHECK (tip->isVisible());
+
+    tip->mouseExit (event);
+    CHECK_FALSE (tip->isVisible());
+}
+
 TEST_CASE_METHOD (ProcessorFixture, "The editor's text is Orbitron", "[editor][font]")
 {
     AudioPluginAudioProcessorEditor editor (processor);
@@ -36,8 +60,8 @@ TEST_CASE_METHOD (ProcessorFixture, "The editor's text is Orbitron", "[editor][f
         if (auto* label = dynamic_cast<juce::Label*> (child))
             labels.push_back (label);
 
-    // The GAIN heading and the knob's text box
-    REQUIRE (labels.size() == 2);
+    // The title, the version tip, the GAIN heading and the knob's text box
+    REQUIRE (labels.size() == 4);
 
     for (auto* label : labels)
     {
