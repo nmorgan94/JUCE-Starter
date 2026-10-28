@@ -1,0 +1,22 @@
+/* LookAndFeel_V4's dark colour scheme */
+@theme static {
+  --color-background: #323e44;
+  --color-widget: #263238;
+  --color-line: #8e989b;
+  --color-fg: #ffffff;
+  --color-thumb: #42a2c8;
+  --color-track: #181f22;
+  --color-clip: #ff3d4a;
+  --font-display: Orbitron, var(--font-sans);
+}
+
+@font-face {
+  font-family: Orbitron;
+  font-weight: 400 900;
+  src: url('../../Assets/OrbitronVariable.ttf') format('truetype');
+}
+
+body {
+  font-family: var(--font-display);
+  color: var(--color-fg);
+}

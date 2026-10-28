@@ -1,6 +1,7 @@
 #pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
+#include "shared/ParameterSpecs.h"
 
 //==============================================================================
 namespace Parameters
@@ -11,8 +12,8 @@ namespace Parameters
 
     // Parameter IDs — use these constants everywhere instead of raw strings.
     // inline const means one definition shared across all translation units (C++17).
-    inline const juce::ParameterID masterGainId { "masterGain", versionHint };
+    inline const juce::ParameterID masterGainId { ParameterSpecs::masterGain.id, versionHint };
 
-    // Parameter layout factory — defined in Parameters.cpp, compiled once.
+    // Built from ParameterSpecs::all, in its order
     juce::AudioProcessorValueTreeState::ParameterLayout createLayout();
 }

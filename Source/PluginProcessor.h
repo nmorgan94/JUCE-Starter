@@ -2,6 +2,7 @@
 
 #include <juce_audio_processors/juce_audio_processors.h>
 #include "Parameters.h"
+#include "dsp/Effect.h"
 #include "dsp/PeakMeter.h"
 
 //==============================================================================
@@ -53,7 +54,7 @@ private:
     juce::AudioProcessorValueTreeState apvts { *this, nullptr, "Parameters",
                                                Parameters::createLayout() };
 
-    std::atomic<float>* masterGain { apvts.getRawParameterValue (Parameters::masterGainId.getParamID()) };
+    Effect effect;
 
     PeakMeter outputMeter { getTotalNumOutputChannels() };
 

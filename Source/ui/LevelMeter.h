@@ -60,8 +60,7 @@ public:
     explicit LevelMeter (PeakMeter& source) : meter (source)
     {
         // Drop anything played while no meter was showing
-        for (int channel = 0; channel < meter.getNumChannels(); ++channel)
-            meter.readAndReset (channel);
+        meter.reset();
 
         startTimerHz (Ballistics::updateHz);
     }

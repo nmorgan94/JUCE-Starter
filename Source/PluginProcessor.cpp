@@ -1,5 +1,10 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "shared/EffectSettings.h"
+
+#if PLUGIN_WEBVIEW_EDITOR
+ #include "webview/WebViewEditor.h"
+#endif
 
 //==============================================================================
 AudioPluginAudioProcessor::AudioPluginAudioProcessor()
@@ -12,7 +17,6 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
                      #endif
                        )
 {
-    jassert (masterGain != nullptr);
 }
 
 AudioPluginAudioProcessor::~AudioPluginAudioProcessor()
@@ -87,9 +91,8 @@ void AudioPluginAudioProcessor::changeProgramName (int index, const juce::String
 //==============================================================================
 void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    // Use this method as the place to do any pre-playback
-    // initialisation that you need..
-    juce::ignoreUnused (sampleRate, samplesPerBlock);
+    juce::ignoreUnused (samplesPerBlock);
+    effect.prepare (sampleRate);
 }
 
 void AudioPluginAudioProcessor::numChannelsChanged()
@@ -145,21 +148,12 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
-    const float gainDb = masterGain->load();
-    const float gainLinear = juce::Decibels::decibelsToGain (gainDb, -60.0f);
-
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
+    effect.setSettings (makeEffectSettings ([this] (const ParameterSpecs::Spec& spec) -> float
     {
-        auto* channelData = buffer.getWritePointer (channel);
-        juce::FloatVectorOperations::multiply (channelData, gainLinear,
-                                               buffer.getNumSamples());
-    }
+        return *apvts.getRawParameterValue (spec.id);
+    }));
+
+    effect.process (buffer);
 
     outputMeter.process (buffer);
 }
@@ -172,7 +166,11 @@ bool AudioPluginAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* AudioPluginAudioProcessor::createEditor()
 {
+   #if PLUGIN_WEBVIEW_EDITOR
+    return new WebViewEditor (*this);
+   #else
     return new AudioPluginAudioProcessorEditor (*this);
+   #endif
 }
 
 //==============================================================================

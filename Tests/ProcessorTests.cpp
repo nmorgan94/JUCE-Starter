@@ -8,17 +8,50 @@ using namespace TestHelpers;
 using Catch::Matchers::WithinAbs;
 
 //==============================================================================
-TEST_CASE_METHOD (ProcessorFixture, "Master gain parameter has the expected range and default", "[parameters]")
+// What hosts and saved sessions see. Change it only on purpose
+TEST_CASE_METHOD (ProcessorFixture, "Parameters match the snapshot hosts rely on", "[parameters]")
 {
-    auto* parameter = dynamic_cast<juce::AudioParameterFloat*> (
-        processor.getAPVTS().getParameter (Parameters::masterGainId.getParamID()));
+    struct Expected
+    {
+        const char* id;
+        int versionHint;
+        const char* name;
+        const char* label;
+        float start, end, interval, skew, defaultValue;
+        std::array<const char*, 3> textAt0HalfAnd1;
+    };
 
-    REQUIRE (parameter != nullptr);
-    CHECK (parameter->getName (100) == "Master Gain");
-    CHECK (parameter->getLabel() == "dB");
-    CHECK_THAT (parameter->range.start, WithinAbs (-60.0, 1.0e-6));
-    CHECK_THAT (parameter->range.end, WithinAbs (6.0, 1.0e-6));
-    CHECK_THAT (parameter->get(), WithinAbs (0.0, 1.0e-6));
+    const std::vector<Expected> snapshot {
+        { "masterGain", 1, "Master Gain", "dB", -60.0f, 6.0f, 0.1f, 1.0f, 0.0f, { "-60.0", "-27.0", "6.0" } },
+    };
+
+    const auto& parameters = processor.getParameters();
+    REQUIRE (static_cast<size_t> (parameters.size()) == snapshot.size());
+
+    for (size_t i = 0; i < snapshot.size(); ++i)
+    {
+        const auto& expected = snapshot[i];
+        CAPTURE (i, expected.id);
+
+        auto* parameter = dynamic_cast<juce::RangedAudioParameter*> (parameters[static_cast<int> (i)]);
+        REQUIRE (parameter != nullptr);
+
+        CHECK (parameter->getParameterID() == expected.id);
+        CHECK (parameter->getVersionHint() == expected.versionHint);
+        CHECK (parameter->getName (100) == expected.name);
+        CHECK (parameter->getLabel() == expected.label);
+
+        const auto& range = parameter->getNormalisableRange();
+        CHECK_THAT (range.start, WithinAbs (expected.start, 1.0e-6));
+        CHECK_THAT (range.end, WithinAbs (expected.end, 1.0e-6));
+        CHECK_THAT (range.interval, WithinAbs (expected.interval, 1.0e-6));
+        CHECK_THAT (range.skew, WithinAbs (expected.skew, 1.0e-6));
+        CHECK_THAT (parameter->convertFrom0to1 (parameter->getDefaultValue()), WithinAbs (expected.defaultValue, 1.0e-6));
+
+        CHECK (parameter->getText (0.0f, 100) == expected.textAt0HalfAnd1[0]);
+        CHECK (parameter->getText (0.5f, 100) == expected.textAt0HalfAnd1[1]);
+        CHECK (parameter->getText (1.0f, 100) == expected.textAt0HalfAnd1[2]);
+    }
 }
 
 //==============================================================================

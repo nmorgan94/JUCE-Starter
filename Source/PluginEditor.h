@@ -3,7 +3,6 @@
 #include "PluginProcessor.h"
 #include "ui/CustomLookAndFeel.h"
 #include "ui/LevelMeter.h"
-// #include <BinaryData.h> add BinaryData here
 
 //==============================================================================
 class AudioPluginAudioProcessorEditor final : public juce::AudioProcessorEditor
@@ -22,6 +21,11 @@ private:
     AudioPluginAudioProcessor& processorRef;
 
     CustomLookAndFeel customLookAndFeel;
+
+    juce::Label gainLabel;
+    juce::Slider gainKnob { juce::Slider::RotaryHorizontalVerticalDrag, juce::Slider::TextBoxBelow };
+    juce::AudioProcessorValueTreeState::SliderAttachment gainAttachment {
+        processorRef.getAPVTS(), Parameters::masterGainId.getParamID(), gainKnob };
 
     LevelMeter outputMeter { processorRef.getOutputMeter() };
 

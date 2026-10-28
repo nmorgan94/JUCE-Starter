@@ -43,6 +43,12 @@ public:
         return peak (channel).exchange (0.0f);
     }
 
+    void reset() noexcept
+    {
+        for (auto& channelPeak : peaks)
+            channelPeak.store (0.0f);
+    }
+
     int getNumChannels() const noexcept         { return numChannels.load(); }
 
 private:

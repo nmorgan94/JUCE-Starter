@@ -6,6 +6,18 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     : AudioProcessorEditor (&p), processorRef (p)
 {
     setLookAndFeel (&customLookAndFeel);
+
+    gainLabel.setText ("GAIN", juce::dontSendNotification);
+    gainLabel.setFont (CustomLookAndFeel::orbitron (CustomLookAndFeel::boldWeight).withHeight (16.0f));
+    gainLabel.setJustificationType (juce::Justification::centred);
+    addAndMakeVisible (gainLabel);
+
+    // The id lets tests find the knob
+    gainKnob.setComponentID (Parameters::masterGainId.getParamID());
+    gainKnob.setTextValueSuffix (juce::String (" ") + ParameterSpecs::masterGain.unit);
+    gainKnob.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 80, 22);
+    addAndMakeVisible (gainKnob);
+
     addAndMakeVisible (outputMeter);
 
     // Make sure that before the constructor has finished, you've set the
@@ -23,37 +35,18 @@ void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
-
-    g.setColour (juce::Colours::white);
-    
-    // Create a centered text block
-    auto bounds = getLocalBounds();
-    int blockWidth = bounds.getWidth() - 100;
-    int blockHeight = bounds.getHeight() - 60;
-    auto textBlock = bounds.withSizeKeepingCentre(blockWidth, blockHeight);
-    
-    // Draw title
-    g.setFont (juce::FontOptions(16.0f).withStyle("Bold"));
-    auto titleArea = textBlock.removeFromTop(30);
-    g.drawText ("Welcome to the JUCE Starter!", titleArea, juce::Justification::centredTop);
-    
-    textBlock.removeFromTop(10); // Add spacing
-    
-    // Draw instructions with left-aligned bullets
-    g.setFont (juce::FontOptions(15.0f));
-    juce::String instructions = "If you are using binary assets:\n\n"
-                                "- Add them to the Assets directory\n"
-                                "- Add BinaryData header to the Plugin Editor\n"
-                                "- Reconfigure and build the Plugin with CMAKE";
-    
-    g.drawFittedText (instructions, textBlock, juce::Justification::topLeft, 10);
 }
 
 void AudioPluginAudioProcessorEditor::resized()
 {
     // This is generally where you'll want to lay out the positions of any
     // subcomponents in your editor..
+    auto bounds = getLocalBounds();
 
-    outputMeter.setBounds (getLocalBounds().removeFromRight (50)
+    outputMeter.setBounds (bounds.removeFromRight (50)
                                .withSizeKeepingCentre (LevelMeter::preferredWidth, 160));
+
+    auto knobArea = bounds.withSizeKeepingCentre (140, 190);
+    gainLabel.setBounds (knobArea.removeFromTop (24));
+    gainKnob.setBounds (knobArea);
 }

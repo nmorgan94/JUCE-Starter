@@ -11,31 +11,20 @@ A JUCE audio plugin template for creating VST3, AU, and Standalone audio plugins
 - Binary asset support
 - Plugin validation via pluginval, wired up as CTest tests
 - Unit tests with Catch2, run through CTest alongside pluginval
+- One parameter list, `Source/shared/ParameterSpecs.h`, read by the plugin, the wasm engine and the web UI
+- A playable web demo: the DSP built as WebAssembly, with a React copy of the editor
+- An optional WebView editor, the same React editor inside the plugin
 
 
 ## Adding Assets
 
-1. Place your asset files in the `Assets/` directory
-2. Reconfigure and rebuild the project:
-   ```bash
-   cmake --workflow --preset debug
-   ```
-3. Access assets in your code:
-   ```cpp
-   #include <BinaryData.h>
-   
-   // Example: Load an image
-   auto image = juce::ImageCache::getFromMemory(
-       BinaryData::your_image_png,
-       BinaryData::your_image_pngSize
-   );
-   ```
+Files in `Assets/` are embedded as `BinaryData` (reconfigure after adding one):
 
-**How It Works:**
-- Assets are automatically converted to C++ code during build
-- The `BinaryData.h` header is generated in the build directory
-- Asset names are derived from filenames
-- All assets are available in the `BinaryData` namespace
+```cpp
+#include <BinaryData.h>
+
+auto image = juce::ImageCache::getFromMemory (BinaryData::your_image_png, BinaryData::your_image_pngSize);
+```
 
 ## Prerequisites
 
@@ -58,6 +47,7 @@ Each workflow configures, builds and, for tests, runs in one go.
 | Run the unit tests against a Release build | `cmake --workflow --preset unit-release` |
 | Run the unit tests and pluginval | `cmake --workflow --preset test` |
 | Run all tests against a Release build | `cmake --workflow --preset test-release` |
+| Build the plugin with the WebView editor (Release) | `cmake --workflow --preset webview` |
 | Launch the Standalone app (Debug) | `cmake --build --preset run` |
 | Install the plugin for your DAW: **macOS** | Automatic on every build |
 | Install the plugin for your DAW: **Windows** | `cmake --build --preset install-windows`, from an administrator prompt |
@@ -80,7 +70,9 @@ ctest --preset debug                            # test
 ### What Happens During Build
 
 1. **First time only**: CMake downloads JUCE, pluginval and Catch2 automatically via CPM
-   (configure with `-DENABLE_PLUGINVAL=OFF -DENABLE_UNIT_TESTS=OFF` to fetch only JUCE)
+   into `.cpm-cache/`, shared by every preset and by `wasm/`
+   (configure with `-DENABLE_PLUGINVAL=OFF -DENABLE_UNIT_TESTS=OFF` to fetch only JUCE).
+   A build folder made before the cache needs its `_deps/juce-*` removed first
 2. **Every build**: Compiles your plugin in the selected configuration
 3. **macOS only, by default**: Installs plugins to system directories
    (see [System Installation](#system-installation))
@@ -98,9 +90,8 @@ plugin inside a host:
 ## Unit Tests
 
 Unit tests live in `Tests/` and use [Catch2](https://github.com/catchorg/Catch2). They build into a
-`JuceStarter_Tests` executable that links the plugin's code and drives the processor directly,
-checking parameters, audio output, bus layouts and state save/restore. Run them with the `unit`,
-`unit-release`, `test` or `test-release` workflow (see [Commands](#commands)).
+`JuceStarter_Tests` executable that links the plugin's code and drives the processor directly.
+Run them with the `unit`, `unit-release`, `test` or `test-release` workflow (see [Commands](#commands)).
 
 Like pluginval, the tests are not part of a plain build: the `debug` workflow builds only the plugin.
 
@@ -137,6 +128,25 @@ validate the plugin too, which takes longer.
 Each run's page lists the plugins under **Artifacts** for 30 days: `JuceStarter-macOS.tar.gz` (VST3
 and AU) and `JuceStarter-Windows.tar.gz` (VST3). They are unsigned.
 
+## Web Demo and WebView Editor
+
+Needs Emscripten (`brew install emscripten`) and Node 24+.
+
+| Task | Command |
+|---|---|
+| Build and test the demo (engine and UI tests) | `cd wasm && cmake --workflow --preset wasm` |
+| Serve the demo with live reload at http://localhost:8099 | `cd webui && npm run serve` |
+| Typecheck and test the UI on their own | `cd webui && npm run typecheck && npm test` |
+| Build the plugin with the WebView editor | `cmake --workflow --preset webview` |
+
+- The demo builds to `wasm/build-wasm/<project>-<version>/`, named from `project()` and `VERSION` in
+  `CMakeLists.txt`. Upload that folder; the site embeds its `index.html` in an iframe.
+  [`wasm.yml`](.github/workflows/wasm.yml) builds the same folder on GitHub, run by hand.
+- The demo's input is made by `webui/src/demo/loop.ts`. For a recording, add it to
+  `webui/public/demo/` as AAC (`.m4a`) so Safari can decode it, and decode it in `startAudio`.
+- The `webview` build installs over the native one; run the `release` workflow to switch back.
+- Delete `wasm/patches/juce-wasm.patch` once JUCE fixes its wasm support.
+
 ## Plugin Locations
 
 ### Build Artifacts
@@ -171,13 +181,13 @@ because the VST3 folder needs administrator rights.
 Edit `CMakeLists.txt` to customize:
 
 ```cmake
-project(JuceStarter)  # Change project name
+project(JuceStarter)  # Change project name; also names the web demo folder
 
 juce_add_plugin(${PROJECT_NAME}
     COMPANY_NAME MyCompanyName            # Your company name
     PLUGIN_MANUFACTURER_CODE Mycn         # 4-char manufacturer ID
     PLUGIN_CODE Plgn                      # 4-char unique plugin ID
-    VERSION 0.0.0                         # Version number
+    VERSION 0.0.1                         # Version number
     FORMATS VST3 AU Standalone            # Plugin formats to build
     # ... other options
 )
