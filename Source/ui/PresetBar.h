@@ -11,13 +11,14 @@ class PresetBar : public juce::Component,
                   private juce::Timer
 {
 public:
-    PresetBar (PresetManager&, PromptOverlay&, const juce::String& aboutText);
+    PresetBar (PresetManager&, PromptOverlay&, std::function<void()> showManual, const juce::String& aboutText);
 
     void resized() override;
 
 private:
     PresetManager& presets;
     PromptOverlay& prompt;
+    const std::function<void()> showManual;
     const juce::String aboutText;
 
     juce::TextButton previousButton { "<" }, nextButton { ">" }, nameButton,

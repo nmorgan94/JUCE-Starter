@@ -30,6 +30,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
 
     prompt.setFont (CustomLookAndFeel::orbitron (CustomLookAndFeel::regularWeight).withHeight (14.0f));
     addChildComponent (prompt);
+    addChildComponent (manual);
 
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.

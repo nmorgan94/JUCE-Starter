@@ -1,7 +1,7 @@
 #include "PresetBar.h"
 
-PresetBar::PresetBar (PresetManager& p, PromptOverlay& o, const juce::String& about)
-    : presets (p), prompt (o), aboutText (about)
+PresetBar::PresetBar (PresetManager& p, PromptOverlay& o, std::function<void()> m, const juce::String& about)
+    : presets (p), prompt (o), showManual (std::move (m)), aboutText (about)
 {
     previousButton.onClick = [this] { presets.loadPrevious(); };
     nextButton.onClick     = [this] { presets.loadNext(); };
@@ -120,6 +120,7 @@ void PresetBar::showMoreMenu()
     menu.addSeparator();
     menu.addItem ("Show Preset Folder", [this] { presets.showUserDirectory(); });
     menu.addSeparator();
+    menu.addItem ("Manual", showManual);
     menu.addItem ("About", [this] { prompt.showMessage ("About", aboutText); });
 
     menu.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (moreButton));

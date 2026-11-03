@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { TextButton } from './controls.tsx';
 import { juceHeight } from './fonts.ts';
+import { Modal } from './Modal.tsx';
 
 export interface Prompt {
   askForText(title: string, initialText: string, okText: string, onOk: (text: string) => void): void;
@@ -25,7 +26,6 @@ const BUTTON = { width: 90, height: 28 };
 
 function Overlay({ shown, dismiss }: { shown: Shown; dismiss(): void }) {
   const input = useRef<HTMLInputElement>(null);
-  const panel = useRef<HTMLDivElement>(null);
 
   // Closes first, so the callback can open another prompt
   const accept = () => {
@@ -34,54 +34,35 @@ function Overlay({ shown, dismiss }: { shown: Shown; dismiss(): void }) {
     shown.onOk?.(text);
   };
 
-  useEffect(() => {
-    if (input.current) {
-      input.current.focus();
-      input.current.select();
-    } else panel.current?.focus();
-  }, [shown]);
+  useEffect(() => input.current?.select(), [shown]);
 
   return (
-    <div
-      className="absolute inset-0 z-50 flex items-center justify-center bg-background/75"
-      onPointerDown={(e) => e.stopPropagation()}
-      onKeyDown={(e) => {
-        // Modal: nothing behind the overlay gets keys
-        e.stopPropagation();
-        if (e.key === 'Escape') dismiss();
-        // A focused button handles Enter itself
-        if (e.key === 'Enter' && !(e.target instanceof HTMLButtonElement)) accept();
-      }}
+    <Modal
+      label={shown.title}
+      titleInset={{ x: 20, y: 16 }}
+      panel={PANEL}
+      onClose={dismiss}
+      // A focused button handles Enter itself
+      onPanelKey={(e) => e.key === 'Enter' && !(e.target instanceof HTMLButtonElement) && accept()}
+      focus={input}
     >
-      <div
-        ref={panel}
-        tabIndex={-1}
-        role="dialog"
-        aria-label={shown.title}
-        className="relative rounded-lg border border-line bg-widget outline-none"
-        style={PANEL}
-      >
-        <div className="absolute flex items-center font-bold" style={{ left: 20, top: 16, right: 20, height: 24, fontSize: juceHeight(14) }}>
-          {shown.title}
+      {shown.initialText === null ? (
+        <div className="absolute overflow-hidden whitespace-pre-line" style={{ left: 20, top: 48, right: 20, height: 56, fontSize: juceHeight(12), lineHeight: '12px' }}>
+          {shown.message}
         </div>
-        {shown.initialText === null ? (
-          <div className="absolute overflow-hidden whitespace-pre-line" style={{ left: 20, top: 48, right: 20, height: 56, fontSize: juceHeight(12), lineHeight: '12px' }}>
-            {shown.message}
-          </div>
-        ) : (
-          <input
-            ref={input}
-            className="absolute border border-line bg-background px-1 text-fg outline-none focus:border-thumb"
-            style={{ left: 20, top: 48, width: PANEL.width - 40, height: 28, fontSize: juceHeight(14) }}
-            defaultValue={shown.initialText}
-          />
-        )}
-        {shown.canCancel && (
-          <TextButton text="Cancel" style={{ right: 20 + BUTTON.width + 8, bottom: 16, ...BUTTON }} onClick={dismiss} />
-        )}
-        <TextButton text={shown.okText} style={{ right: 20, bottom: 16, ...BUTTON }} onClick={accept} />
-      </div>
-    </div>
+      ) : (
+        <input
+          ref={input}
+          className="absolute border border-line bg-background px-1 text-fg outline-none focus:border-thumb"
+          style={{ left: 20, top: 48, width: PANEL.width - 40, height: 28, fontSize: juceHeight(14) }}
+          defaultValue={shown.initialText}
+        />
+      )}
+      {shown.canCancel && (
+        <TextButton text="Cancel" style={{ right: 20 + BUTTON.width + 8, bottom: 16, ...BUTTON }} onClick={dismiss} />
+      )}
+      <TextButton text={shown.okText} style={{ right: 20, bottom: 16, ...BUTTON }} onClick={accept} />
+    </Modal>
   );
 }
 

@@ -19,11 +19,12 @@ function layOut({ left, top, width, height }: Box) {
 interface PresetBarProps {
   presets: PresetBackend;
   prompt: Prompt;
+  showManual(): void;
   about: string;
   bounds: Box;
 }
 
-export function PresetBar({ presets, prompt, about, bounds }: PresetBarProps) {
+export function PresetBar({ presets, prompt, showManual, about, bounds }: PresetBarProps) {
   const status = useSyncExternalStore(presets.onStatus, presets.status);
   const [menu, setMenu] = useState<MenuState | null>(null);
   const nameButton = useRef<HTMLButtonElement>(null);
@@ -110,7 +111,11 @@ export function PresetBar({ presets, prompt, about, bounds }: PresetBarProps) {
       { kind: 'item', label: 'Delete', disabled: !user, onSelect: () => user && remove(user) },
     ];
     if (presets.showFolder) items.push({ kind: 'separator' }, { kind: 'item', label: 'Show Preset Folder', onSelect: presets.showFolder });
-    items.push({ kind: 'separator' }, { kind: 'item', label: 'About', onSelect: () => prompt.showMessage('About', about) });
+    items.push(
+      { kind: 'separator' },
+      { kind: 'item', label: 'Manual', onSelect: showManual },
+      { kind: 'item', label: 'About', onSelect: () => prompt.showMessage('About', about) },
+    );
 
     return { items, target: layout.more, owner: moreButton.current };
   });

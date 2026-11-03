@@ -14,6 +14,7 @@ A JUCE audio plugin template for creating VST3, AU, and Standalone audio plugins
 - One parameter list, `Source/shared/ParameterSpecs.h`, read by the plugin, the wasm engine and the web UI
 - A playable web demo: the DSP built as WebAssembly, with a React copy of the editor
 - An optional WebView editor, the same React editor inside the plugin
+- A manual, `Assets/Manual.md`, shown inside the editor and the demo
 
 
 ## Adding Assets
@@ -25,6 +26,17 @@ Files in `Assets/` are embedded as `BinaryData` (reconfigure after adding one):
 
 auto image = juce::ImageCache::getFromMemory (BinaryData::your_image_png, BinaryData::your_image_pngSize);
 ```
+
+## Manual
+
+`Assets/Manual.md` is what **... → Manual** shows, in the native editor, the WebView editor and the
+demo. Each plugin writes its own. Only this much Markdown is read:
+
+- `# ` heading, `## ` subheading, `- ` bullet
+- Any other line is text, joined to the paragraph or bullet above until a blank line
+- No inline formatting, links or images
+
+`Source/ui/Manual.cpp` and `webui/src/manual.ts` parse it; their tests share one sample, so change both together.
 
 ## Prerequisites
 

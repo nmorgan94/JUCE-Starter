@@ -1,6 +1,6 @@
 #include "CustomLookAndFeel.h"
 #include "LevelMeter.h"
-#include "PromptOverlay.h"
+#include "ModalOverlay.h"
 #include <BinaryData.h>
 #include <map>
 
@@ -34,9 +34,9 @@ CustomLookAndFeel::CustomLookAndFeel()
     using UI = ColourScheme::UIColour;
     const auto scheme = getCurrentColourScheme();
 
-    setColour (PromptOverlay::dimColourId, scheme.getUIColour (UI::windowBackground).withAlpha (0.75f));
-    setColour (PromptOverlay::panelColourId, scheme.getUIColour (UI::widgetBackground));
-    setColour (PromptOverlay::outlineColourId, scheme.getUIColour (UI::outline));
+    setColour (ModalOverlay::dimColourId, scheme.getUIColour (UI::windowBackground).withAlpha (0.75f));
+    setColour (ModalOverlay::panelColourId, scheme.getUIColour (UI::widgetBackground));
+    setColour (ModalOverlay::outlineColourId, scheme.getUIColour (UI::outline));
     setColour (LevelMeter::backgroundColourId, scheme.getUIColour (UI::windowBackground));
 
     setColour (juce::Slider::rotarySliderFillColourId, scheme.getUIColour (UI::defaultFill));

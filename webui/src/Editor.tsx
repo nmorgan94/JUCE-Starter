@@ -5,6 +5,7 @@ import type { PluginBackend } from './backend.ts';
 import { Rotary } from './controls.tsx';
 import { juceHeight } from './fonts.ts';
 import { LevelMeter, PREFERRED_WIDTH } from './LevelMeter.tsx';
+import { useManual } from './ManualOverlay.tsx';
 import { PresetBar } from './PresetBar.tsx';
 import { usePrompt } from './PromptOverlay.tsx';
 
@@ -28,6 +29,7 @@ const knobTop = centred(CONTENT_HEIGHT, KNOB_AREA.height);
 
 export const Editor = memo(function Editor({ backend }: { backend: PluginBackend }) {
   const { prompt, overlay } = usePrompt();
+  const manual = useManual();
 
   return (
     <div className="relative bg-background" style={{ width: EDITOR_WIDTH, height: EDITOR_HEIGHT }}>
@@ -44,8 +46,9 @@ export const Editor = memo(function Editor({ backend }: { backend: PluginBackend
       <div className="absolute flex items-center font-bold" style={{ ...TITLE, fontSize: juceHeight(18) }}>
         JUCE STARTER
       </div>
-      <PresetBar presets={backend.presets} prompt={prompt} about={aboutText(backend.about)} bounds={PRESET_BAR} />
+      <PresetBar presets={backend.presets} prompt={prompt} showManual={manual.showManual} about={aboutText(backend.about)} bounds={PRESET_BAR} />
       {overlay}
+      {manual.overlay}
     </div>
   );
 });

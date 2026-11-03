@@ -114,7 +114,7 @@ if(PLUGIN_WEBVIEW_EDITOR)
     set(webUiZip "${CMAKE_CURRENT_BINARY_DIR}/WebUI.zip")
 
     file(GLOB_RECURSE uiInputs CONFIGURE_DEPENDS
-        "${uiDir}/src/*" "${uiDir}/package*.json" "${uiDir}/vite.config.ts" "${CMAKE_CURRENT_SOURCE_DIR}/Assets/*.ttf")
+        "${uiDir}/src/*" "${uiDir}/package*.json" "${uiDir}/vite.config.ts" "${CMAKE_CURRENT_SOURCE_DIR}/Assets/*")
     list(FILTER uiInputs EXCLUDE REGEX "/src/demo/")
 
     # npm writes this on every install

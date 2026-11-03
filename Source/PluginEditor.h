@@ -4,6 +4,7 @@
 #include "ui/About.h"
 #include "ui/CustomLookAndFeel.h"
 #include "ui/LevelMeter.h"
+#include "ui/Manual.h"
 #include "ui/PresetBar.h"
 #include "ui/PromptOverlay.h"
 
@@ -32,7 +33,8 @@ private:
     juce::Label title;
 
     PromptOverlay prompt;
-    PresetBar presetBar { processorRef.getPresetManager(), prompt, About::text (processorRef) };
+    ManualOverlay manual;
+    PresetBar presetBar { processorRef.getPresetManager(), prompt, [this] { manual.show(); }, About::text (processorRef) };
 
     juce::Label gainLabel;
     juce::Slider gainKnob { juce::Slider::RotaryHorizontalVerticalDrag, juce::Slider::TextBoxBelow };

@@ -100,13 +100,13 @@ TEST_CASE_METHOD (ProcessorFixture, "The editor's text is Orbitron", "[editor][f
 
     std::vector<juce::TextButton*> buttons;
     for (auto* child : editor.getChildren())
-        if (dynamic_cast<PresetBar*> (child) != nullptr || dynamic_cast<PromptOverlay*> (child) != nullptr)
+        if (dynamic_cast<PresetBar*> (child) != nullptr || dynamic_cast<ModalOverlay*> (child) != nullptr)
             for (auto* grandchild : child->getChildren())
                 if (auto* button = dynamic_cast<juce::TextButton*> (grandchild))
                     buttons.push_back (button);
 
-    // The preset bar's five and the prompt's two
-    REQUIRE (buttons.size() == 7);
+    // The preset bar's five, the prompt's two and the manual's one
+    REQUIRE (buttons.size() == 8);
 
     for (auto* button : buttons)
     {
