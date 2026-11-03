@@ -139,9 +139,9 @@ Needs Emscripten (`brew install emscripten`) and Node 24+.
 | Typecheck and test the UI on their own | `cd webui && npm run typecheck && npm test` |
 | Build the plugin with the WebView editor | `cmake --workflow --preset webview` |
 
-- The demo builds to `wasm/build-wasm/<company>-<project>-<version>/`, named from `COMPANY_NAME`,
-  `project()` and `VERSION` in `CMakeLists.txt`. Upload that folder; the site embeds its `index.html` in an iframe.
-  [`wasm.yml`](.github/workflows/wasm.yml) builds the same folder on GitHub, run by hand.
+- The demo builds to `wasm/build-wasm/<company>-<project>-<version>/`, named from `COMPANY_NAME`
+  (one word), `project()` and `VERSION` in `CMakeLists.txt`. Upload that folder; the site embeds its `index.html` in an iframe.
+  [`wasm.yml`](.github/workflows/wasm.yml) builds the same folder on GitHub as an artifact of that name, run by hand.
 - The demo's input is made by `webui/src/demo/loop.ts`. For a recording, add it to
   `webui/public/demo/` as AAC (`.m4a`) so Safari can decode it, and decode it in `startAudio`.
 - The `webview` build installs over the native one; run the `release` workflow to switch back.

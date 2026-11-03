@@ -13,7 +13,7 @@ const PROCESSOR_URL = 'processor.js';
 // As the plugin's default stereo layout
 const CHANNELS = 2;
 
-const HEIGHT_MESSAGE = 'samplerealm-demo-height';
+const SIZE_MESSAGE = 'samplerealm-demo-size';
 
 // Blocked storage throws on access
 function browserStorage() {
@@ -107,6 +107,23 @@ function Demo() {
   const [failed, setFailed] = useState(false);
   const context = useRef<AudioContext | null>(null);
   const { ref, scale } = useScale();
+  const editor = useRef<HTMLDivElement>(null);
+
+  // Not the document's height, which never shrinks below the frame. The editor's box is measured,
+  // as its scale catches up with the frame's width a render late
+  useEffect(() => {
+    const content = ref.current;
+    const box = editor.current;
+    if (window.parent === window || !content || !box) return;
+
+    const report = () => {
+      const below = Math.round(content.getBoundingClientRect().height - box.getBoundingClientRect().height);
+      window.parent.postMessage({ type: SIZE_MESSAGE, editorWidth: EDITOR_WIDTH, editorHeight: EDITOR_HEIGHT, below }, '*');
+    };
+    const observer = new ResizeObserver(report);
+    observer.observe(content);
+    return () => observer.disconnect();
+  }, [ref]);
   const player = usePlayer(audio);
 
   useEffect(() => {
@@ -140,7 +157,7 @@ function Demo() {
 
   return (
     <div className="mx-auto" style={{ maxWidth: EDITOR_WIDTH }} ref={ref}>
-      <div className="relative overflow-hidden rounded-xl" style={{ width: EDITOR_WIDTH * scale, height: EDITOR_HEIGHT * scale }}>
+      <div className="relative overflow-hidden rounded-xl" ref={editor} style={{ width: EDITOR_WIDTH * scale, height: EDITOR_HEIGHT * scale }}>
         <div className="origin-top-left" style={{ width: EDITOR_WIDTH, height: EDITOR_HEIGHT, transform: `scale(${scale})` }}>
           {engine && <Editor backend={engine.backend} />}
         </div>
@@ -169,15 +186,5 @@ function Demo() {
   );
 }
 
-function mount(element: Element) {
-  createRoot(element).render(<Demo />);
-
-  // Not the document's height, which never shrinks below the frame
-  if (window.parent !== window) {
-    const report = () => window.parent.postMessage({ type: HEIGHT_MESSAGE, height: Math.ceil(element.getBoundingClientRect().height) }, '*');
-    new ResizeObserver(report).observe(element);
-  }
-}
-
 const root = document.getElementById('root');
-if (root) mount(root);
+if (root) createRoot(root).render(<Demo />);
