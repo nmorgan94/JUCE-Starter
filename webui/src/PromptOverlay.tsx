@@ -1,5 +1,5 @@
 // Mirrors Source/ui/PromptOverlay.h
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { TextButton } from './controls.tsx';
 import { juceHeight } from './fonts.ts';
 import { Modal } from './Modal.tsx';
@@ -22,10 +22,13 @@ interface Shown {
 }
 
 const PANEL = { width: 380, height: 160 };
+const MESSAGE_FONT = 12;
 const BUTTON = { width: 90, height: 28 };
 
 function Overlay({ shown, dismiss }: { shown: Shown; dismiss(): void }) {
   const input = useRef<HTMLInputElement>(null);
+  const message = useRef<HTMLDivElement>(null);
+  const [extra, setExtra] = useState(0);
 
   // Closes first, so the callback can open another prompt
   const accept = () => {
@@ -36,18 +39,28 @@ function Overlay({ shown, dismiss }: { shown: Shown; dismiss(): void }) {
 
   useEffect(() => input.current?.select(), [shown]);
 
+  // As PromptOverlay::show: grow by what the message overflows
+  useLayoutEffect(() => {
+    const box = message.current;
+    setExtra(box ? box.scrollHeight - box.clientHeight : 0);
+  }, [shown]);
+
   return (
     <Modal
       label={shown.title}
       titleInset={{ x: 20, y: 16 }}
-      panel={PANEL}
+      panel={{ ...PANEL, height: PANEL.height + extra, maxHeight: '100%' }}
       onClose={dismiss}
       // A focused button handles Enter itself
       onPanelKey={(e) => e.key === 'Enter' && !(e.target instanceof HTMLButtonElement) && accept()}
       focus={input}
     >
       {shown.initialText === null ? (
-        <div className="absolute overflow-hidden whitespace-pre-line" style={{ left: 20, top: 48, right: 20, height: 56, fontSize: juceHeight(12), lineHeight: '12px' }}>
+        <div
+          ref={message}
+          className="absolute overflow-hidden whitespace-pre-line"
+          style={{ left: 20, top: 48, right: 20, bottom: 16 + BUTTON.height + 12, fontSize: juceHeight(MESSAGE_FONT), lineHeight: `${MESSAGE_FONT}px` }}
+        >
           {shown.message}
         </div>
       ) : (

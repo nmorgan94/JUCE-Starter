@@ -16,10 +16,11 @@ export interface ParamInfo {
 export interface UiInfo {
   version: string;
   commit: string;
+  build: 'Debug' | 'Release';
   params: ParamInfo[];
 }
 
-export interface About extends Pick<UiInfo, 'version' | 'commit'> {
+export interface About extends Pick<UiInfo, 'version' | 'commit' | 'build'> {
   // "VST3 in Ableton Live", or where else the editor is running
   running: string;
 }

@@ -62,7 +62,7 @@ export function workletBackend(info: UiInfo, factoryPresets: StoredPreset[] = []
   });
 
   return {
-    about: { version: info.version, commit: info.commit, running: 'Web demo' },
+    about: { version: info.version, commit: info.commit, build: info.build, running: 'Web demo' },
     presets,
     param: (id) => entry(id).param,
     getValue: (id) => entry(id).value,

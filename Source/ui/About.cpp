@@ -1,4 +1,5 @@
 #include "About.h"
+#include "../shared/BuildType.h"
 #include <BuildInfo.h>
 
 // The only file that includes BuildInfo.h, so a new commit recompiles just this
@@ -16,9 +17,10 @@ namespace About
 
     juce::String text (const juce::AudioProcessor& processor)
     {
-        return "Version " JucePlugin_VersionString "\n"
-               "Commit " + juce::String (commit) + "\n"
-             + running (processor) + "\n"
-               "Native UI";
+        return juce::StringArray { "Version " JucePlugin_VersionString,
+                                   juce::String (BuildType::name) + " build",
+                                   "Commit " + juce::String (commit),
+                                   running (processor),
+                                   "Native UI" }.joinIntoString ("\n");
     }
 }

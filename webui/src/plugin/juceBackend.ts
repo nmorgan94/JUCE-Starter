@@ -50,7 +50,7 @@ export function juceBackend(): PluginBackend {
   const slider = (id: string) => entry(id).slider;
 
   return {
-    about: { version: info.version, commit: info.commit, running: running[0] },
+    about: { version: info.version, commit: info.commit, build: info.build, running: running[0] },
     presets: jucePresets(JSON.parse(presetStatus[0]) as PresetStatus),
     param,
     getValue: (id) => slider(id).getScaledValue(),

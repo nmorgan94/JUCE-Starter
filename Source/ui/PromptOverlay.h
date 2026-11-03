@@ -80,10 +80,11 @@ private:
     juce::TextEditor textEditor;
     juce::TextButton okButton, cancelButton { "Cancel" };
     std::function<void (const juce::String&)> callback;
+    int extraHeight = 0;
 
     juce::Rectangle<int> getPanelBounds() const override
     {
-        return getLocalBounds().withSizeKeepingCentre (380, 160);
+        return getLocalBounds().withSizeKeepingCentre (380, juce::jmin (160 + extraHeight, getHeight()));
     }
 
     void panelKeyPressed (const juce::KeyPress& key) override
@@ -104,7 +105,24 @@ private:
         textEditor.setVisible (wantsText);
         cancelButton.setVisible (canCancel);
 
+        // Lay out at the base size, then grow by what the message overflows
+        extraHeight = 0;
+        parentSizeChanged();
+        resized();
+        extraHeight = juce::jmax (0, wrappedHeight() - messageLabel.getHeight());
         open();
+    }
+
+    // As the label wraps it, with no line limit
+    int wrappedHeight()
+    {
+        juce::GlyphArrangement glyphs;
+        glyphs.addFittedText (getLookAndFeel().getLabelFont (messageLabel), messageLabel.getText(), 0.0f, 0.0f,
+                              messageLabel.getLocalBounds().toFloat().getWidth(),
+                              std::numeric_limits<float>::max(), messageLabel.getJustificationType(),
+                              std::numeric_limits<int>::max(), messageLabel.getMinimumHorizontalScale());
+
+        return juce::roundToInt (glyphs.getBoundingBox (0, -1, true).getBottom());
     }
 
     /** Closes first, so the callback can open another prompt. */

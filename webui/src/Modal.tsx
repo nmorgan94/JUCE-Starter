@@ -34,7 +34,7 @@ export function Modal({ label, titleInset, panel, onClose, onPanelKey, focus, ch
         else onPanelKey?.(e);
       }}
     >
-      <div ref={panelRef} tabIndex={-1} role="dialog" aria-label={label} className="relative rounded-lg border border-line bg-widget outline-none" style={panel}>
+      <div ref={panelRef} tabIndex={-1} role="dialog" aria-label={label} className="relative rounded-lg bg-widget outline-none ring-1 ring-inset ring-line" style={panel}>
         <div className="absolute flex items-center font-bold" style={{ left: titleInset.x, top: titleInset.y, right: titleInset.x, height: TITLE_HEIGHT, fontSize: juceHeight(14) }}>
           {label}
         </div>

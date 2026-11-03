@@ -42,3 +42,29 @@ TEST_CASE_METHOD (OverlayFixture, "A text prompt passes its text to the callback
 
     CHECK (received == "Old name");
 }
+
+TEST_CASE_METHOD (OverlayFixture, "A prompt grows to fit its message, wrapped lines included", "[prompt][ui]")
+{
+    PromptOverlay prompt;
+    parent.addChildComponent (prompt);
+
+    const auto messageHeight = [&] (const juce::String& message)
+    {
+        prompt.showMessage ("Title", message);
+
+        for (auto* child : prompt.getChildren())
+            if (auto* label = dynamic_cast<juce::Label*> (child); label != nullptr && label->getText() == message)
+                return label->getHeight();
+
+        return -1;
+    };
+
+    CHECK (messageHeight ("One") == 56);
+    CHECK (messageHeight ("1\n2\n3\n4") == 56);
+    CHECK (messageHeight ("1\n2\n3\n4\n5") == 60);
+    CHECK (messageHeight (juce::String::repeatedString ("A long message that wraps ", 12)) > 60);
+    CHECK (messageHeight ("Back to one") == 56);
+
+    // Never taller than the editor
+    CHECK (messageHeight (juce::String::repeatedString ("line\n", 40)) < parent.getHeight());
+}

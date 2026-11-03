@@ -3,6 +3,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <string>
+#include "BuildType.h"
 #include "ParameterSpecs.h"
 
 //==============================================================================
@@ -53,7 +54,7 @@ inline std::string uiInfoJson (const char* version, const char* commit)
         return "real";
     };
 
-    std::string json = "{\"version\":" + quoted (version) + ",\"commit\":" + quoted (commit) + ",\"params\":[";
+    std::string json = "{\"version\":" + quoted (version) + ",\"commit\":" + quoted (commit) + ",\"build\":" + quoted (BuildType::name) + ",\"params\":[";
 
     for (size_t i = 0; i < ParameterSpecs::all.size(); ++i)
     {

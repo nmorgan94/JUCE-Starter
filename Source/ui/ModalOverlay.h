@@ -66,6 +66,10 @@ protected:
     void open()
     {
         parentSizeChanged();
+
+        // The panel may depend on what's shown
+        resized();
+        repaint();
         setVisible (true);
         toFront (true);
     }
