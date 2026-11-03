@@ -28,9 +28,6 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
 
     addAndMakeVisible (outputMeter);
 
-    versionTip.setComponentID ("versionTip");
-    addChildComponent (versionTip);
-
     prompt.setFont (CustomLookAndFeel::orbitron (CustomLookAndFeel::regularWeight).withHeight (14.0f));
     addChildComponent (prompt);
 
@@ -63,7 +60,6 @@ void AudioPluginAudioProcessorEditor::resized()
     const auto titleBar = bounds.removeFromTop (titleHeight);
     const auto titleWidth = juce::GlyphArrangement::getStringWidth (title.getFont(), title.getText());
     title.setBounds (titleBar.withTrimmedLeft (12).withWidth (static_cast<int> (std::ceil (titleWidth))));
-    versionTip.setBounds (title.getX(), titleBar.getBottom() + 4, versionTip.getIdealWidth(), 22);
     auto bar = titleBar.withTrimmedRight (12);
     outputMeter.setBounds (bar.removeFromRight (LevelMeter::preferredWidth).reduced (0, 4));
     presetBar.setBounds (bar.withLeft (152).withTrimmedRight (12).reduced (0, 10));

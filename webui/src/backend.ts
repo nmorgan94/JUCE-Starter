@@ -15,7 +15,13 @@ export interface ParamInfo {
 
 export interface UiInfo {
   version: string;
+  commit: string;
   params: ParamInfo[];
+}
+
+export interface About extends Pick<UiInfo, 'version' | 'commit'> {
+  // "VST3 in Ableton Live", or where else the editor is running
+  running: string;
 }
 
 // Linear peak per channel since the last level
@@ -56,7 +62,7 @@ export interface PresetBackend {
 export const isSamePreset = (a: PresetEntry, b: PresetEntry) => a.name === b.name && a.isFactory === b.isFactory;
 
 export interface PluginBackend {
-  version: string;
+  about: About;
   presets: PresetBackend;
   param(id: string): ParamInfo;
   // Real values, not 0..1

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "PluginProcessor.h"
+#include "ui/About.h"
 #include "ui/CustomLookAndFeel.h"
-#include "ui/HoverTip.h"
 #include "ui/LevelMeter.h"
 #include "ui/PresetBar.h"
 #include "ui/PromptOverlay.h"
@@ -30,10 +30,9 @@ private:
     CustomLookAndFeel customLookAndFeel;
 
     juce::Label title;
-    HoverTip versionTip { title, "v" JucePlugin_VersionString };
 
     PromptOverlay prompt;
-    PresetBar presetBar { processorRef.getPresetManager(), prompt };
+    PresetBar presetBar { processorRef.getPresetManager(), prompt, About::text (processorRef) };
 
     juce::Label gainLabel;
     juce::Slider gainKnob { juce::Slider::RotaryHorizontalVerticalDrag, juce::Slider::TextBoxBelow };

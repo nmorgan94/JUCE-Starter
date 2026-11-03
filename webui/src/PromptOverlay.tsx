@@ -65,7 +65,7 @@ function Overlay({ shown, dismiss }: { shown: Shown; dismiss(): void }) {
           {shown.title}
         </div>
         {shown.initialText === null ? (
-          <div className="absolute overflow-hidden" style={{ left: 20, top: 48, right: 20, height: 36, fontSize: juceHeight(12) }}>
+          <div className="absolute overflow-hidden whitespace-pre-line" style={{ left: 20, top: 48, right: 20, height: 56, fontSize: juceHeight(12), lineHeight: '12px' }}>
             {shown.message}
           </div>
         ) : (

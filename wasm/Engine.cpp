@@ -2,6 +2,7 @@
 #include "shared/ParameterSpecs.h"
 #include "shared/EffectSettings.h"
 #include "shared/UiInfoJson.h"
+#include <BuildInfo.h>
 #include "dsp/Effect.h"
 #include "dsp/PeakMeter.h"
 
@@ -45,7 +46,7 @@ namespace
 
 EXPORT (uiInfo) const char* uiInfo()
 {
-    static const auto json = uiInfoJson (PLUGIN_VERSION);
+    static const auto json = uiInfoJson (PLUGIN_VERSION, PLUGIN_GIT_COMMIT);
     return json.c_str();
 }
 

@@ -65,6 +65,9 @@ add_executable(Engine
 
 target_include_directories(Engine PRIVATE ../Source)
 
+include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/BuildInfo.cmake)
+add_build_info(Engine)
+
 target_compile_definitions(Engine PRIVATE JUCE_STANDALONE_APPLICATION=1 PLUGIN_VERSION="${pluginVersion}")
 
 target_link_libraries(Engine PRIVATE juce::juce_audio_basics)

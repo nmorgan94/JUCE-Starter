@@ -3,6 +3,7 @@
 
 #include "TestHelpers.h"
 #include "PluginEditor.h"
+#include "ui/HoverTip.h"
 
 using namespace TestHelpers;
 using Catch::Matchers::WithinAbs;
@@ -22,28 +23,34 @@ TEST_CASE_METHOD (ProcessorFixture, "The gain knob and the parameter follow each
     CHECK (knob->getTextFromValue (knob->getValue()) == "3.0 dB");
 }
 
-TEST_CASE_METHOD (ProcessorFixture, "Hovering the title shows the version", "[editor]")
+TEST_CASE ("A hover tip shows while the mouse is over its target", "[editor]")
 {
-    AudioPluginAudioProcessorEditor editor (processor);
-    auto* title = editor.findChildWithID ("title");
-    auto* tip = dynamic_cast<juce::Label*> (editor.findChildWithID ("versionTip"));
-    REQUIRE (title != nullptr);
-    REQUIRE (tip != nullptr);
-
-    CHECK (tip->getText() == "v" JucePlugin_VersionString);
-    CHECK_FALSE (tip->isVisible());
+    juce::Component target;
+    HoverTip tip { target, "Tip" };
+    CHECK_FALSE (tip.isVisible());
 
     // Called directly: JUCE only routes mouse events to a window that's on top
     const juce::MouseEvent event (juce::Desktop::getInstance().getMainMouseSource(), {}, {},
                                   juce::MouseInputSource::defaultPressure, 0.0f, 0.0f, 0.0f, 0.0f,
-                                  title, title, juce::Time::getCurrentTime(), {}, juce::Time::getCurrentTime(),
+                                  &target, &target, juce::Time::getCurrentTime(), {}, juce::Time::getCurrentTime(),
                                   0, false);
 
-    tip->mouseEnter (event);
-    CHECK (tip->isVisible());
+    tip.mouseEnter (event);
+    CHECK (tip.isVisible());
 
-    tip->mouseExit (event);
-    CHECK_FALSE (tip->isVisible());
+    tip.mouseExit (event);
+    CHECK_FALSE (tip.isVisible());
+}
+
+TEST_CASE_METHOD (ProcessorFixture, "About shows the version, the commit and the UI", "[editor]")
+{
+    const auto lines = juce::StringArray::fromLines (About::text (processor));
+
+    REQUIRE (lines.size() == 4);
+    CHECK (lines[0] == "Version " JucePlugin_VersionString);
+    CHECK (lines[1] == juce::String ("Commit ") + About::commit);
+    CHECK (lines[2] == "Undefined");
+    CHECK (lines[3] == "Native UI");
 }
 
 TEST_CASE_METHOD (ProcessorFixture, "The gain knob draws its value in blue with a white dot", "[editor]")
@@ -82,8 +89,8 @@ TEST_CASE_METHOD (ProcessorFixture, "The editor's text is Orbitron", "[editor][f
         if (auto* label = dynamic_cast<juce::Label*> (child))
             labels.push_back (label);
 
-    // The title, the version tip, the GAIN heading and the knob's text box
-    REQUIRE (labels.size() == 4);
+    // The title, the GAIN heading and the knob's text box
+    REQUIRE (labels.size() == 3);
 
     for (auto* label : labels)
     {

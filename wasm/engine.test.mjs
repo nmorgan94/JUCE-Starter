@@ -42,10 +42,11 @@ const sine = (seconds, amplitude, frequency = 440) =>
 
 const maxError = (actual, expected) => Math.max(...actual.map((sample, i) => Math.abs(sample - expected[i])));
 
-test('the ui info carries the version and every parameter as ParameterSpecs defines it', () => {
+test('the ui info carries the version, the commit and every parameter as ParameterSpecs defines it', () => {
   const info = readUiInfo(engine());
 
   assert.match(info.version, /^\d+\.\d+\.\d+$/);
+  assert.match(info.commit, /^([0-9a-f]{7,}(-local)?|unknown)$/);
   assert.deepEqual(info.params, [
     { id: 'masterGain', name: 'Master Gain', kind: 'real', min: -60, max: 6, defaultValue: 0, step: 0.1, skew: 1, unit: 'dB', choices: [] },
   ]);

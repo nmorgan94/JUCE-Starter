@@ -3,6 +3,7 @@
 #include "../PluginEditor.h"
 #include "../shared/ParameterSpecs.h"
 #include "../shared/UiInfoJson.h"
+#include "../ui/About.h"
 #include "../ui/LevelMeter.h"
 #include <WebUIData.h>
 
@@ -123,8 +124,9 @@ juce::WebBrowserComponent::Options WebViewEditor::createOptions()
         options = options.withOptionsFrom (*relay);
 
     return withPresetFunctions (options)
-        .withInitialisationData ("uiInfo", juce::String (uiInfoJson (JucePlugin_VersionString)))
-        .withInitialisationData ("presetStatus", juce::JSON::toString (presetStatus (processorRef.getPresetManager()), true));
+        .withInitialisationData ("uiInfo", juce::String (uiInfoJson (JucePlugin_VersionString, About::commit)))
+        .withInitialisationData ("presetStatus", juce::JSON::toString (presetStatus (processorRef.getPresetManager()), true))
+        .withInitialisationData ("running", About::running (processorRef));
 }
 
 juce::WebBrowserComponent::Options WebViewEditor::withPresetFunctions (const juce::WebBrowserComponent::Options& options)

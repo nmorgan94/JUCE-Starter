@@ -4,7 +4,7 @@ import { paramLookup, type Level, type PluginBackend, type PresetBackend, type P
 import { toProportion } from '../params.ts';
 
 // JUCE's type lists only its own initialisation data
-type InitialisationData = { uiInfo: string[]; presetStatus: string[] };
+type InitialisationData = { uiInfo: string[]; presetStatus: string[]; running: string[] };
 
 function jucePresets(initial: PresetStatus): PresetBackend {
   let status = initial;
@@ -42,7 +42,7 @@ function jucePresets(initial: PresetStatus): PresetBackend {
 }
 
 export function juceBackend(): PluginBackend {
-  const { uiInfo, presetStatus } = window.__JUCE__.initialisationData as unknown as InitialisationData;
+  const { uiInfo, presetStatus, running } = window.__JUCE__.initialisationData as unknown as InitialisationData;
   const info = JSON.parse(uiInfo[0]) as UiInfo;
   const entry = paramLookup(new Map(info.params.map((param) => [param.id, { param, slider: getSliderState(param.id) }])));
 
@@ -50,7 +50,7 @@ export function juceBackend(): PluginBackend {
   const slider = (id: string) => entry(id).slider;
 
   return {
-    version: info.version,
+    about: { version: info.version, commit: info.commit, running: running[0] },
     presets: jucePresets(JSON.parse(presetStatus[0]) as PresetStatus),
     param,
     getValue: (id) => slider(id).getScaledValue(),
