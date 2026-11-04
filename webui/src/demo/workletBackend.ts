@@ -28,8 +28,13 @@ export async function loadEngine(url: string): Promise<{ wasm: ArrayBuffer; info
 // The node's port, so tests can stand in for it
 export type EnginePort = Pick<MessagePort, 'postMessage'> & { onmessage: ((e: MessageEvent) => void) | null };
 
+// Source/shared/Transport.h
+export type Transport = { bpm: number; playing: boolean; ppq: number };
+
 export type WorkletBackend = PluginBackend & {
   attach(port: EnginePort): void;
+  // The page plays the host
+  setTransport(transport: Transport): void;
 };
 
 export function workletBackend(info: UiInfo, factoryPresets: StoredPreset[] = [], storage?: PresetStorage): WorkletBackend {
@@ -81,6 +86,7 @@ export function workletBackend(info: UiInfo, factoryPresets: StoredPreset[] = []
       levelListeners.add(listener);
       return () => levelListeners.delete(listener);
     },
+    setTransport: (transport) => post({ type: 'transport', ...transport }),
     attach: (enginePort) => {
       port = enginePort;
       port.onmessage = ({ data }) => {

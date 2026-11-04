@@ -1,7 +1,11 @@
-// A placeholder for the demo's input: four bars at 120 BPM
-const BPM = 120;
+import type { Transport } from './workletBackend.ts';
+
+// A placeholder for the demo's input
+const BPM = 174;
 const BEATS = 16;
 const PEAK = 0.7;
+
+export const loopTransport = (playing: boolean, seconds: number): Transport => ({ bpm: BPM, playing, ppq: (seconds * BPM) / 60 });
 
 const midiToHz = (note: number) => 440 * 2 ** ((note - 69) / 12);
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <juce_audio_basics/juce_audio_basics.h>
+#include "../shared/Transport.h"
 
 //==============================================================================
 class Effect
@@ -14,7 +15,7 @@ public:
     void prepare (double sampleRate);
     void setSettings (const Settings& newSettings);
 
-    void process (juce::AudioBuffer<float>& buffer);
+    void process (juce::AudioBuffer<float>& buffer, const Transport& transport);
 
 private:
     Settings settings;

@@ -24,6 +24,7 @@ class EngineProcessor extends AudioWorkletProcessor {
 
     this.port.onmessage = ({ data }) => {
       if (data.type === 'param') this.engine.setParam(data.index, data.value);
+      else if (data.type === 'transport') this.engine.setTransport(data.bpm, data.playing, data.ppq);
     };
 
     this.port.postMessage({ type: 'ready' });

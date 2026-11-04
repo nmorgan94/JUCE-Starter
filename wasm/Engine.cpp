@@ -40,6 +40,8 @@ namespace
     PeakMeter meter { maxChannels };
     juce::AudioBuffer<float> buffer { maxChannels, maxBlockSize };
     int numChannels = maxChannels;
+    double currentSampleRate = 48000.0;
+    Transport transport;
 }
 
 #define EXPORT(name) extern "C" __attribute__ ((export_name (#name)))
@@ -54,6 +56,7 @@ EXPORT (uiInfo) const char* uiInfo()
 EXPORT (prepare) void prepare (double sampleRate, int channels)
 {
     numChannels = std::clamp (channels, 1, maxChannels);
+    currentSampleRate = sampleRate;
     meter.setNumChannels (numChannels);
     buffer.clear();
     effect.prepare (sampleRate);
@@ -63,6 +66,12 @@ EXPORT (setParam) void setParam (int index, float value)
 {
     if (index >= 0 && index < numParams)
         values[static_cast<size_t> (index)] = value;
+}
+
+// The page plays the host: render moves the position on while playing
+EXPORT (setTransport) void setTransport (double bpm, bool playing, double ppq)
+{
+    transport = { bpm, playing, ppq };
 }
 
 // Write the input here, and read the output back after render
@@ -76,8 +85,9 @@ EXPORT (render) void render (int numSamples)
     juce::AudioBuffer<float> block { buffer.getArrayOfWritePointers(), numChannels, std::clamp (numSamples, 0, maxBlockSize) };
 
     effect.setSettings (makeEffectSettings (valueOf));
-    effect.process (block);
+    effect.process (block, transport);
     meter.process (block);
+    transport.advance (block.getNumSamples(), currentSampleRate);
 }
 
 // The loudest output sample since the last call, as linear gain

@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { EDITOR_HEIGHT, EDITOR_WIDTH, Editor } from '../Editor.tsx';
 import { juceHeight } from '../fonts.ts';
 import { factoryPresets } from './factoryPresets.ts';
-import { makeLoop } from './loop.ts';
+import { loopTransport, makeLoop } from './loop.ts';
 import { loadEngine, workletBackend, type WorkletBackend } from './workletBackend.ts';
 import './styles.css';
 
@@ -70,33 +70,37 @@ function useScale() {
 }
 
 // The loop runs through the engine, so Pause also lets the meter fall
-function usePlayer(audio: Audio | null) {
+function usePlayer(audio: Audio | null, backend: WorkletBackend | undefined) {
   const [playing, setPlaying] = useState(false);
   const source = useRef<AudioBufferSourceNode | null>(null);
+  // Seconds played, counting every time round the loop, as a host's position does
   const offset = useRef(0);
   const startedAt = useRef(0);
 
   const play = useCallback(() => {
-    if (!audio || source.current) return;
+    if (!audio || !backend || source.current) return;
     const { context, node, loop } = audio;
+    // Before resuming, so the engine has it for the first block
+    backend.setTransport(loopTransport(true, offset.current));
     context.resume();
     const next = new AudioBufferSourceNode(context, { buffer: loop, loop: true });
     next.connect(node);
-    next.start(0, offset.current);
+    next.start(0, offset.current % loop.duration);
     startedAt.current = context.currentTime - offset.current;
     source.current = next;
     setPlaying(true);
-  }, [audio]);
+  }, [audio, backend]);
 
   const pause = useCallback(() => {
-    if (!audio || !source.current) return;
-    offset.current = (audio.context.currentTime - startedAt.current) % audio.loop.duration;
+    if (!audio || !backend || !source.current) return;
+    offset.current = audio.context.currentTime - startedAt.current;
     source.current.stop();
     source.current.disconnect();
     source.current = null;
     audio.context.suspend();
+    backend.setTransport(loopTransport(false, offset.current));
     setPlaying(false);
-  }, [audio]);
+  }, [audio, backend]);
 
   return { playing, toggle: playing ? pause : play };
 }
@@ -124,7 +128,7 @@ function Demo() {
     observer.observe(content);
     return () => observer.disconnect();
   }, [ref]);
-  const player = usePlayer(audio);
+  const player = usePlayer(audio, engine?.backend);
 
   useEffect(() => {
     loadEngine(ENGINE_URL)

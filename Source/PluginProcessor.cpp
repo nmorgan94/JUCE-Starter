@@ -179,7 +179,7 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         return *apvts.getRawParameterValue (spec.id);
     }));
 
-    effect.process (buffer);
+    effect.process (buffer, Transport::from (getPlayHead()));
 
     outputMeter.process (buffer);
 }
