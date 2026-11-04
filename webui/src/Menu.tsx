@@ -1,14 +1,13 @@
 // Mirrors juce::PopupMenu as LookAndFeel_V4 draws it
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { juceHeight } from './fonts.ts';
+import type { Box } from './layout.ts';
 
 export type MenuItem =
   | { kind: 'header'; label: string }
   | { kind: 'separator' }
   | { kind: 'item'; label: string; ticked?: boolean; disabled?: boolean; onSelect?: () => void }
   | { kind: 'submenu'; label: string; ticked?: boolean; items: MenuItem[] };
-
-export type Box = { left: number; top: number; width: number; height: number };
 
 // getIdealPopupMenuItemSize: the font's height * 1.3
 const ITEM_HEIGHT = 17;

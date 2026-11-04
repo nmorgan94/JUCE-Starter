@@ -9,15 +9,10 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
 
     addAndMakeVisible (header);
 
-    gainLabel.setText ("GAIN", juce::dontSendNotification);
-    gainLabel.setFont (CustomLookAndFeel::orbitron (CustomLookAndFeel::boldWeight).withHeight (16.0f));
-    gainLabel.setJustificationType (juce::Justification::centred);
-    addAndMakeVisible (gainLabel);
-
     // The id lets tests find the knob
     gainKnob.setComponentID (Parameters::masterGainId.getParamID());
-    gainKnob.setTextValueSuffix (juce::String (" ") + ParameterSpecs::masterGain.unit);
-    gainKnob.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 80, 22);
+    gainKnob.setLabelText ("GAIN");
+    gainKnob.getSlider().setTextValueSuffix (juce::String (" ") + ParameterSpecs::masterGain.unit);
     addAndMakeVisible (gainKnob);
 
     prompt.setFont (CustomLookAndFeel::orbitron (CustomLookAndFeel::regularWeight).withHeight (14.0f));
@@ -49,7 +44,5 @@ void AudioPluginAudioProcessorEditor::resized()
 
     header.setBounds (bounds.removeFromTop (HeaderBar::height));
 
-    auto knobArea = bounds.withSizeKeepingCentre (140, 190);
-    gainLabel.setBounds (knobArea.removeFromTop (24));
-    gainKnob.setBounds (knobArea);
+    gainKnob.setBounds (bounds.withSizeKeepingCentre (140, 190));
 }

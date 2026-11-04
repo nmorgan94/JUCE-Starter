@@ -51,7 +51,7 @@ juce::Font CustomLookAndFeel::getLabelFont (juce::Label& label)
 {
     const auto font = label.getFont();
 
-    // Labels given their own typeface, like the GAIN heading, keep it
+    // Labels given their own typeface keep it
     if (font.getTypefaceName() != juce::Font::getDefaultSansSerifFontName())
         return font;
 

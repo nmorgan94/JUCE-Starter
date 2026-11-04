@@ -13,7 +13,7 @@ export const toProportion = (param: ParamInfo, value: number) => {
   return param.skew === 1 ? p : Math.pow(p, param.skew);
 };
 
-const snap = (param: ParamInfo, value: number) => {
+export const snap = (param: ParamInfo, value: number) => {
   const clamped = Math.min(param.max, Math.max(param.min, value));
   if (param.step <= 0) return clamped;
   const snapped = param.min + Math.round((clamped - param.min) / param.step) * param.step;

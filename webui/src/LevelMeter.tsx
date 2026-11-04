@@ -1,6 +1,7 @@
 // Mirrors Source/ui/LevelMeter.h
 import { useEffect, useRef, useState } from 'react';
 import type { PluginBackend } from './backend.ts';
+import { centred } from './layout.ts';
 import { barChanged, emptyBar, FLOOR_DB, isClipping, updateBar, UPDATE_HZ, type Bar } from './meter.ts';
 
 const BAR_WIDTH = 12;
@@ -60,7 +61,7 @@ function BarView({ x, height, bar }: { x: number; height: number; bar: Bar }) {
 
 export function LevelMeter({ backend, x, y, width, height }: { backend: PluginBackend; x: number; y: number; width: number; height: number }) {
   const bars = useBars(backend);
-  const start = Math.trunc((width - widthFor(bars.length)) / 2);
+  const start = centred(width, widthFor(bars.length));
 
   return (
     <svg className="absolute" style={{ left: x, top: y }} width={width} height={height} aria-hidden>

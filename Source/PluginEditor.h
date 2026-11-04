@@ -4,6 +4,7 @@
 #include "ui/About.h"
 #include "ui/CustomLookAndFeel.h"
 #include "ui/HeaderBar.h"
+#include "ui/LabeledSlider.h"
 #include "ui/Manual.h"
 #include "ui/PromptOverlay.h"
 
@@ -32,10 +33,9 @@ private:
     HeaderBar header { "JUCE STARTER", processorRef.getPresetManager(), prompt, [this] { manual.show(); },
                        About::text (processorRef), processorRef.getOutputMeter() };
 
-    juce::Label gainLabel;
-    juce::Slider gainKnob { juce::Slider::RotaryHorizontalVerticalDrag, juce::Slider::TextBoxBelow };
+    LabeledSlider gainKnob;
     juce::AudioProcessorValueTreeState::SliderAttachment gainAttachment {
-        processorRef.getAPVTS(), Parameters::masterGainId.getParamID(), gainKnob };
+        processorRef.getAPVTS(), Parameters::masterGainId.getParamID(), gainKnob.getSlider() };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessorEditor)
 };

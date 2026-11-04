@@ -5,7 +5,7 @@ A gain effect with a level meter. It works in mono or stereo.
 ## Master Gain
 
 The GAIN knob sets the output level, from -60 dB to +6 dB. At 0 dB the sound passes through unchanged.
-Drag up or down to turn it, or type a value into the box below it.
+Drag up or down to turn it. While you do, its name shows the value. Click the name to type a value.
 
 ## Meter
 

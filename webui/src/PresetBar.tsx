@@ -2,7 +2,8 @@
 import { useCallback, useRef, useState, useSyncExternalStore } from 'react';
 import { isSamePreset, type PresetBackend, type PresetEntry } from './backend.ts';
 import { TextButton } from './controls.tsx';
-import { Menu, type Box, type MenuItem, type MenuState } from './Menu.tsx';
+import type { Box } from './layout.ts';
+import { Menu, type MenuItem, type MenuState } from './Menu.tsx';
 import type { PresetActions } from './presetActions.ts';
 
 // PresetBar::resized
