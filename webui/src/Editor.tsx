@@ -1,22 +1,16 @@
 // Mirrors AudioPluginAudioProcessorEditor::resized()
 import { memo } from 'react';
-import { aboutText } from './about.ts';
 import type { PluginBackend } from './backend.ts';
 import { Rotary } from './controls.tsx';
 import { juceHeight } from './fonts.ts';
-import { LevelMeter, PREFERRED_WIDTH } from './LevelMeter.tsx';
+import { HEADER_HEIGHT, HeaderBar } from './HeaderBar.tsx';
 import { useManual } from './ManualOverlay.tsx';
-import { PresetBar } from './PresetBar.tsx';
 import { usePrompt } from './PromptOverlay.tsx';
 
 export const EDITOR_WIDTH = 440;
 export const EDITOR_HEIGHT = 312;
 
-const TITLE_HEIGHT = 44;
-const TITLE = { left: 12, top: 0, height: TITLE_HEIGHT };
-const METER = { left: EDITOR_WIDTH - 12 - PREFERRED_WIDTH, top: 4, width: PREFERRED_WIDTH, height: TITLE_HEIGHT - 8 };
-const PRESET_BAR = { left: 152, top: 10, width: METER.left - 12 - 152, height: TITLE_HEIGHT - 20 };
-const CONTENT_HEIGHT = EDITOR_HEIGHT - TITLE_HEIGHT;
+const CONTENT_HEIGHT = EDITOR_HEIGHT - HEADER_HEIGHT;
 
 const KNOB_AREA = { width: 140, height: 190 };
 const LABEL_HEIGHT = 24;
@@ -33,8 +27,7 @@ export const Editor = memo(function Editor({ backend }: { backend: PluginBackend
 
   return (
     <div className="relative bg-background" style={{ width: EDITOR_WIDTH, height: EDITOR_HEIGHT }}>
-      <div className="absolute inset-x-0 top-0 bg-widget" style={{ height: TITLE_HEIGHT }} />
-      <div className="absolute inset-x-0" style={{ top: TITLE_HEIGHT, height: CONTENT_HEIGHT }}>
+      <div className="absolute inset-x-0" style={{ top: HEADER_HEIGHT, height: CONTENT_HEIGHT }}>
         <div className="absolute" style={{ left: knobLeft, top: knobTop, width: KNOB_AREA.width }}>
           <div className="flex items-center justify-center font-bold" style={{ height: LABEL_HEIGHT, fontSize: juceHeight(16) }}>
             GAIN
@@ -42,11 +35,7 @@ export const Editor = memo(function Editor({ backend }: { backend: PluginBackend
           <Rotary backend={backend} id="masterGain" width={KNOB_AREA.width} height={KNOB_AREA.height - LABEL_HEIGHT} textBox={{ width: 80, height: 22 }} />
         </div>
       </div>
-      <LevelMeter backend={backend} x={METER.left} y={METER.top} width={METER.width} height={METER.height} />
-      <div className="absolute flex items-center font-bold" style={{ ...TITLE, fontSize: juceHeight(18) }}>
-        JUCE STARTER
-      </div>
-      <PresetBar presets={backend.presets} prompt={prompt} showManual={manual.showManual} about={aboutText(backend.about)} bounds={PRESET_BAR} />
+      <HeaderBar title="JUCE STARTER" width={EDITOR_WIDTH} backend={backend} prompt={prompt} showManual={manual.showManual} />
       {overlay}
       {manual.overlay}
     </div>

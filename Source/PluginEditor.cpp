@@ -7,13 +7,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
 {
     setLookAndFeel (&customLookAndFeel);
 
-    title.setComponentID ("title");
-    title.setText ("JUCE STARTER", juce::dontSendNotification);
-    title.setFont (CustomLookAndFeel::orbitron (CustomLookAndFeel::boldWeight).withHeight (18.0f));
-    title.setJustificationType (juce::Justification::centredLeft);
-    title.setBorderSize ({});
-    addAndMakeVisible (title);
-    addAndMakeVisible (presetBar);
+    addAndMakeVisible (header);
 
     gainLabel.setText ("GAIN", juce::dontSendNotification);
     gainLabel.setFont (CustomLookAndFeel::orbitron (CustomLookAndFeel::boldWeight).withHeight (16.0f));
@@ -25,8 +19,6 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     gainKnob.setTextValueSuffix (juce::String (" ") + ParameterSpecs::masterGain.unit);
     gainKnob.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 80, 22);
     addAndMakeVisible (gainKnob);
-
-    addAndMakeVisible (outputMeter);
 
     prompt.setFont (CustomLookAndFeel::orbitron (CustomLookAndFeel::regularWeight).withHeight (14.0f));
     addChildComponent (prompt);
@@ -47,9 +39,6 @@ void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
-
-    g.setColour (findColour (juce::Slider::backgroundColourId));
-    g.fillRect (getLocalBounds().removeFromTop (titleHeight));
 }
 
 void AudioPluginAudioProcessorEditor::resized()
@@ -58,12 +47,7 @@ void AudioPluginAudioProcessorEditor::resized()
     // subcomponents in your editor..
     auto bounds = getLocalBounds();
 
-    const auto titleBar = bounds.removeFromTop (titleHeight);
-    const auto titleWidth = juce::GlyphArrangement::getStringWidth (title.getFont(), title.getText());
-    title.setBounds (titleBar.withTrimmedLeft (12).withWidth (static_cast<int> (std::ceil (titleWidth))));
-    auto bar = titleBar.withTrimmedRight (12);
-    outputMeter.setBounds (bar.removeFromRight (LevelMeter::preferredWidth).reduced (0, 4));
-    presetBar.setBounds (bar.withLeft (152).withTrimmedRight (12).reduced (0, 10));
+    header.setBounds (bounds.removeFromTop (HeaderBar::height));
 
     auto knobArea = bounds.withSizeKeepingCentre (140, 190);
     gainLabel.setBounds (knobArea.removeFromTop (24));

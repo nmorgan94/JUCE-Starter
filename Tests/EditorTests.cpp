@@ -8,6 +8,23 @@
 using namespace TestHelpers;
 using Catch::Matchers::WithinAbs;
 
+template <typename T>
+static std::vector<T*> descendantsOf (juce::Component& parent)
+{
+    std::vector<T*> found;
+
+    for (auto* child : parent.getChildren())
+    {
+        if (auto* match = dynamic_cast<T*> (child))
+            found.push_back (match);
+
+        const auto below = descendantsOf<T> (*child);
+        found.insert (found.end(), below.begin(), below.end());
+    }
+
+    return found;
+}
+
 //==============================================================================
 TEST_CASE_METHOD (ProcessorFixture, "The gain knob and the parameter follow each other", "[editor]")
 {
@@ -83,19 +100,11 @@ TEST_CASE_METHOD (ProcessorFixture, "The gain knob draws its value in blue with 
 TEST_CASE_METHOD (ProcessorFixture, "The editor's text is Orbitron", "[editor][font]")
 {
     AudioPluginAudioProcessorEditor editor (processor);
-    auto* knob = editor.findChildWithID (Parameters::masterGainId.getParamID());
-    REQUIRE (knob != nullptr);
 
-    std::vector<juce::Label*> labels;
-    for (auto* child : editor.getChildren())
-        if (auto* label = dynamic_cast<juce::Label*> (child))
-            labels.push_back (label);
-    for (auto* child : knob->getChildren())
-        if (auto* label = dynamic_cast<juce::Label*> (child))
-            labels.push_back (label);
+    const auto labels = descendantsOf<juce::Label> (editor);
 
-    // The title, the GAIN heading and the knob's text box
-    REQUIRE (labels.size() == 3);
+    // The title, the GAIN heading, the knob's text box, the overlays' titles and the prompt's message
+    REQUIRE (labels.size() == 6);
 
     for (auto* label : labels)
     {
@@ -103,14 +112,9 @@ TEST_CASE_METHOD (ProcessorFixture, "The editor's text is Orbitron", "[editor][f
         CHECK (editor.getLookAndFeel().getLabelFont (*label).getTypefacePtr()->getName() == "Orbitron");
     }
 
-    std::vector<juce::TextButton*> buttons;
-    for (auto* child : editor.getChildren())
-        if (dynamic_cast<PresetBar*> (child) != nullptr || dynamic_cast<ModalOverlay*> (child) != nullptr)
-            for (auto* grandchild : child->getChildren())
-                if (auto* button = dynamic_cast<juce::TextButton*> (grandchild))
-                    buttons.push_back (button);
+    const auto buttons = descendantsOf<juce::TextButton> (editor);
 
-    // The preset bar's five, the prompt's two and the manual's one
+    // The preset bar's four, the header's menu button, the prompt's two and the manual's one
     REQUIRE (buttons.size() == 8);
 
     for (auto* button : buttons)
