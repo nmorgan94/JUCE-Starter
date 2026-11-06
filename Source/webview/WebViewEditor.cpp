@@ -1,4 +1,4 @@
-// The page side of these names is webui/src/plugin/juceBackend.ts
+// The page side of these names is webui/src/plugin/pluginBackend.ts
 #include "WebViewEditor.h"
 #include "../PluginEditor.h"
 #include "../shared/ParameterSpecs.h"
