@@ -15,6 +15,13 @@ namespace
     const juce::Identifier presetFactoryProp  { "presetIsFactory" };
     const juce::Identifier presetModifiedProp { "presetModified" };
 
+    // Only the outer element is parsed, which holds the metadata but not the whole state
+    std::unique_ptr<juce::XmlElement> readHeader (juce::XmlDocument document)
+    {
+        auto xml = document.getDocumentElement (true);
+        return xml != nullptr && xml->hasTagName (presetTag.toString()) ? std::move (xml) : nullptr;
+    }
+
     void sortPresets (juce::Array<PresetManager::Preset>& presets)
     {
         std::stable_sort (presets.begin(), presets.end(), [] (const auto& a, const auto& b)
@@ -33,8 +40,7 @@ PresetManager::PresetManager (juce::AudioProcessorValueTreeState& s, Config c)
 {
     for (std::size_t i = 0; i < config.factoryPresets.size(); ++i)
     {
-        // Only the outer element is parsed, which holds the metadata but not the whole state
-        if (auto xml = juce::XmlDocument (config.factoryPresets[i].toString()).getDocumentElement (true); xml != nullptr && xml->hasTagName (presetTag.toString()))
+        if (const auto xml = readHeader (juce::XmlDocument (config.factoryPresets[i].toString())))
             factoryPresets.add ({ xml->getStringAttribute (nameAttr), xml->getStringAttribute (categoryAttr), xml->getStringAttribute (typeAttr), true, i, {} });
         else
             jassertfalse; // a factory preset failed to parse
@@ -72,8 +78,11 @@ const juce::Array<PresetManager::Preset>& PresetManager::getUserPresets() const
 
 void PresetManager::refreshUserPresets()
 {
+    const auto before = userPresets;
     scanUserPresets();
-    ++changeCounter;
+
+    if (userPresets != before)
+        ++changeCounter;
 }
 
 void PresetManager::scanUserPresets() const
@@ -85,8 +94,7 @@ void PresetManager::scanUserPresets() const
     {
         Preset preset { file.getFileNameWithoutExtension(), {}, {}, false, 0, file };
 
-        // Only the outer element is parsed, which holds the metadata but not the whole state
-        if (auto xml = juce::XmlDocument (file).getDocumentElement (true); xml != nullptr && xml->hasTagName (presetTag.toString()))
+        if (const auto xml = readHeader (juce::XmlDocument (file)))
         {
             preset.category = xml->getStringAttribute (categoryAttr);
             preset.type = xml->getStringAttribute (typeAttr);
@@ -200,18 +208,28 @@ bool PresetManager::step (int delta)
     // Files deleted outside the plugin would otherwise stop the stepping
     refreshUserPresets();
     const auto presets = getPresets();
-
-    if (presets.isEmpty())
-        return false;
-
     const auto now = getCurrent();
+
+    // Not in this list (after Init, or another type's preset): start from either end
+    auto index = delta > 0 ? -1 : presets.size();
 
     for (int i = 0; i < presets.size(); ++i)
         if (now.matches (presets[i]))
-            return loadPreset (presets[juce::negativeAwareModulo (i + delta, presets.size())]);
+        {
+            index = i;
+            break;
+        }
 
-    // Not in this list (after Init, or another type's preset): start from either end
-    return loadPreset (delta > 0 ? presets.getFirst() : presets.getLast());
+    // Past any that won't load
+    for (int tries = 0; tries < presets.size(); ++tries)
+    {
+        index = juce::negativeAwareModulo (index + delta, presets.size());
+
+        if (loadPreset (presets[index]))
+            return true;
+    }
+
+    return false;
 }
 
 bool PresetManager::loadNext()      { return step (1); }

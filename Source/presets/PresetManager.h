@@ -27,6 +27,8 @@ public:
         bool isFactory = false;
         std::size_t factoryIndex = 0; // into Config::factoryPresets
         juce::File file;              // user presets only
+
+        bool operator== (const Preset&) const = default;
     };
 
     struct CurrentPreset

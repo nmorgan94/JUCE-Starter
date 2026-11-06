@@ -162,6 +162,32 @@ TEST_CASE_METHOD (PresetFixture, "Next and previous skip a user preset deleted o
     CHECK (presets.getCurrent().name == factoryNames[0]);
 }
 
+TEST_CASE_METHOD (PresetFixture, "Next and previous step past a preset that won't load", "[presets]")
+{
+    REQUIRE (presets.saveUserPreset ("A", {}).wasOk());
+    REQUIRE (userDirectory.getChildFile ("Broken.srstarter").replaceWithText ("not a preset"));
+
+    REQUIRE (presets.loadNext());
+    CHECK (presets.getCurrent().name == factoryNames[0]);
+
+    REQUIRE (presets.loadPrevious());
+    CHECK (presets.getCurrent().name == "A");
+}
+
+TEST_CASE_METHOD (PresetFixture, "Rescanning moves the change counter only when the folder changed", "[presets]")
+{
+    presets.refreshUserPresets();
+    const auto before = presets.getChangeCounter();
+
+    presets.refreshUserPresets();
+    CHECK (presets.getChangeCounter() == before);
+
+    REQUIRE (userDirectory.createDirectory().wasOk());
+    REQUIRE (userDirectory.getChildFile ("Mine.srstarter").replaceWithText ("<PRESET/>"));
+    presets.refreshUserPresets();
+    CHECK (presets.getChangeCounter() != before);
+}
+
 TEST_CASE_METHOD (PresetFixture, "Presets are found by name and kind", "[presets]")
 {
     REQUIRE (presets.saveUserPreset ("Mine", {}).wasOk());
