@@ -42,7 +42,7 @@ void AudioPluginAudioProcessorEditor::resized()
     // subcomponents in your editor..
     auto bounds = getLocalBounds();
 
-    header.setBounds (bounds.removeFromTop (HeaderBar::height));
+    header.setBounds (bounds.removeFromTop (headerLayout.height));
 
     gainKnob.setBounds (bounds.withSizeKeepingCentre (140, 190));
 }

@@ -20,11 +20,6 @@ export interface UiInfo {
   params: ParamInfo[];
 }
 
-export interface About extends Pick<UiInfo, 'version' | 'commit' | 'build'> {
-  // "VST3 in Ableton Live", or where else the editor is running
-  running: string;
-}
-
 // Linear peak per channel since the last level
 export interface Level {
   peaks: number[];
@@ -47,6 +42,8 @@ export interface PresetBackend {
   onStatus(listener: (status: PresetStatus) => void): () => void;
   // Factory then user presets, rescanning the user ones
   list(): Promise<PresetEntry[]>;
+  // The current preset if it's listed, without a rescan
+  current(): Promise<PresetEntry | null>;
   load(preset: PresetEntry): Promise<void>;
   loadInit(): Promise<void>;
   loadNext(): Promise<void>;
@@ -63,7 +60,9 @@ export interface PresetBackend {
 export const isSamePreset = (a: PresetEntry, b: PresetEntry) => a.name === b.name && a.isFactory === b.isFactory;
 
 export interface PluginBackend {
-  about: About;
+  info: UiInfo;
+  // "VST3 in Ableton Live", or where else the editor is running
+  running: string;
   presets: PresetBackend;
   param(id: string): ParamInfo;
   // Real values, not 0..1
@@ -79,4 +78,15 @@ export const paramLookup = <T>(entries: Map<string, T>) => (id: string) => {
   const found = entries.get(id);
   if (!found) throw new Error(`No parameter ${id}`);
   return found;
+};
+
+export const listenerSet = <Args extends unknown[]>() => {
+  const listeners = new Set<(...args: Args) => void>();
+  return {
+    add: (listener: (...args: Args) => void) => {
+      listeners.add(listener);
+      return () => void listeners.delete(listener);
+    },
+    notify: (...args: Args) => listeners.forEach((listener) => listener(...args)),
+  };
 };

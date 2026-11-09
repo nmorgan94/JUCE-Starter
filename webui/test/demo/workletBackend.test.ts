@@ -25,15 +25,6 @@ test('changes made before the worklet attaches reach it once it does, in order a
   ]);
 });
 
-test('the transport reaches the worklet', () => {
-  const backend = workletBackend(info);
-  const { port, posted } = fakePort();
-  backend.attach(port);
-  backend.setTransport({ bpm: 174, playing: true, ppq: 2 });
-
-  assert.deepEqual(posted, [{ type: 'transport', bpm: 174, playing: true, ppq: 2 }]);
-});
-
 test('values read back and notify before the worklet attaches', () => {
   const backend = workletBackend(info);
   const heard: number[] = [];

@@ -1,7 +1,7 @@
 import type { Transport } from './workletBackend.ts';
 
 // A placeholder for the demo's input
-const BPM = 174;
+const BPM = 120;
 const BEATS = 16;
 const PEAK = 0.7;
 

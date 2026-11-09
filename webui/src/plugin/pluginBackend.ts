@@ -1,6 +1,6 @@
 // The C++ side of these names is Source/webview/WebViewEditor.cpp
 import { getNativeFunction, getSliderState } from '@juce-framework/webview';
-import { paramLookup, type Level, type PluginBackend, type PresetBackend, type PresetEntry, type PresetStatus, type UiInfo } from '../backend.ts';
+import { listenerSet, paramLookup, type Level, type PluginBackend, type PresetBackend, type PresetEntry, type PresetStatus, type UiInfo } from '../backend.ts';
 import { toProportion } from '../params.ts';
 
 // JUCE's type lists only its own initialisation data
@@ -8,11 +8,11 @@ type InitialisationData = { uiInfo: string[]; presetStatus: string[]; running: s
 
 function pluginPresets(initial: PresetStatus): PresetBackend {
   let status = initial;
-  const listeners = new Set<(status: PresetStatus) => void>();
+  const listeners = listenerSet<[PresetStatus]>();
 
   const update = (payload: unknown) => {
     status = payload as PresetStatus;
-    listeners.forEach((listener) => listener(status));
+    listeners.notify(status);
   };
 
   const call = (name: string, ...args: unknown[]) => getNativeFunction(name)(...args);
@@ -24,11 +24,9 @@ function pluginPresets(initial: PresetStatus): PresetBackend {
 
   return {
     status: () => status,
-    onStatus: (listener) => {
-      listeners.add(listener);
-      return () => listeners.delete(listener);
-    },
+    onStatus: listeners.add,
     list: async () => (await call('presetList')) as PresetEntry[],
+    current: async () => ((await call('presetCurrent')) as PresetEntry | null | undefined) ?? null,
     load: async (preset) => void (await call('presetLoad', preset)),
     loadInit: async () => void (await call('presetInit')),
     loadNext: async () => void (await call('presetStep', 1)),
@@ -50,7 +48,8 @@ export function pluginBackend(): PluginBackend {
   const slider = (id: string) => entry(id).slider;
 
   return {
-    about: { version: info.version, commit: info.commit, build: info.build, running: running[0] },
+    info,
+    running: running[0],
     presets: pluginPresets(JSON.parse(presetStatus[0]) as PresetStatus),
     param,
     getValue: (id) => slider(id).getScaledValue(),

@@ -1,7 +1,9 @@
 // Mirrors juce::PopupMenu as LookAndFeel_V4 draws it
-import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
+import { createPortal } from 'react-dom';
+import { areaInEditor, useEditorRoot } from './editorRoot.ts';
 import { juceHeight } from './fonts.ts';
-import type { Box } from './layout.ts';
+import type { Rect } from './layout.ts';
 
 export type MenuItem =
   | { kind: 'header'; label: string }
@@ -36,7 +38,7 @@ function Arrow() {
 function MenuList({ items, placement, onClose }: { items: MenuItem[]; placement: Placement; onClose(): void }) {
   const list = useRef<HTMLDivElement>(null);
   const rows = useRef<(HTMLDivElement | null)[]>([]);
-  const [box, setBox] = useState<Box | null>(null);
+  const [box, setBox] = useState<Rect | null>(null);
   const [open, setOpen] = useState<number | null>(null);
 
   // Kept inside the editor, as JUCE keeps menus on screen
@@ -65,7 +67,7 @@ function MenuList({ items, placement, onClose }: { items: MenuItem[]; placement:
 
   return (
     <>
-      <div ref={list} role="menu" className="absolute z-40 border border-fg/60 bg-background whitespace-nowrap text-fg shadow-lg" style={style}>
+      <div ref={list} role="menu" className="absolute z-41 border border-fg/60 bg-background whitespace-nowrap text-fg shadow-lg" style={style}>
         {items.map((item, index) => {
           if (item.kind === 'separator') {
             return (
@@ -125,23 +127,21 @@ function MenuList({ items, placement, onClose }: { items: MenuItem[]; placement:
   );
 }
 
-export type MenuState = Omit<MenuProps, 'onClose'>;
-
 interface MenuProps {
   items: MenuItem[];
-  // The button it drops from, which toggles it rather than dismissing it
-  target: Box;
-  owner: HTMLElement | null;
+  // Opens below this
+  anchor: Rect;
   onClose(): void;
 }
 
-export function Menu({ items, target, owner, onClose }: MenuProps) {
-  const root = useRef<HTMLDivElement>(null);
+// A click anywhere else closes it, and doesn't reach what's underneath
+export function Menu({ items, anchor, onClose }: MenuProps) {
+  const root = useEditorRoot();
 
+  // The demo's page around the editor
   useEffect(() => {
     const outside = (e: PointerEvent) => {
-      const node = e.target as Node;
-      if (!root.current?.contains(node) && !owner?.contains(node)) onClose();
+      if (!root?.contains(e.target as Node)) onClose();
     };
     const escape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -153,12 +153,37 @@ export function Menu({ items, target, owner, onClose }: MenuProps) {
       document.removeEventListener('pointerdown', outside);
       document.removeEventListener('keydown', escape);
     };
-  }, [owner, onClose]);
+  }, [root, onClose]);
 
-  // display: contents keeps the lists positioned against the editor
-  return (
-    <div ref={root} className="contents">
-      <MenuList items={items} placement={{ left: target.left, top: target.top + target.height, leftIfNoRoom: target.left + target.width }} onClose={onClose} />
-    </div>
+  if (!root) return null;
+
+  return createPortal(
+    <>
+      <div
+        className="absolute inset-0 z-40"
+        onPointerDown={onClose}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          onClose();
+        }}
+      />
+      <MenuList items={items} placement={{ left: anchor.left, top: anchor.top + anchor.height, leftIfNoRoom: anchor.left + anchor.width }} onClose={onClose} />
+    </>,
+    root
   );
+}
+
+// Opens a menu anchored on an element, or at a point in it; render `element` to show it
+export function useMenu() {
+  const root = useEditorRoot();
+  const [shown, setShown] = useState<{ anchor: Rect; items: MenuItem[] } | null>(null);
+  const close = useCallback(() => setShown(null), []);
+
+  const open = (element: HTMLElement, items: MenuItem[], at?: { x: number; y: number }) => {
+    if (!root) return;
+    const area = areaInEditor(element, root);
+    setShown({ anchor: at ? { left: area.left + at.x, top: area.top + at.y, width: 0, height: 0 } : area, items });
+  };
+
+  return { open, element: shown && <Menu anchor={shown.anchor} items={shown.items} onClose={close} /> };
 }

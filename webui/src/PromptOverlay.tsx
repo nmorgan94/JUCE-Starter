@@ -66,7 +66,7 @@ function Overlay({ shown, dismiss }: { shown: Shown; dismiss(): void }) {
       ) : (
         <input
           ref={input}
-          className="absolute border border-line bg-background px-1 text-fg outline-none focus:border-thumb"
+          className="absolute border border-input-outline bg-input px-1 text-fg outline-none selection:bg-input-highlight focus:border-input-focus"
           style={{ left: 20, top: 48, width: PANEL.width - 40, height: 28, fontSize: juceHeight(14) }}
           defaultValue={shown.initialText}
         />

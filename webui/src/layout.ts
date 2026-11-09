@@ -1,10 +1,15 @@
-export type Box = { left: number; top: number; width: number; height: number };
+export interface Rect {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+}
 
 // juce::Rectangle::withSizeKeepingCentre
 export const centred = (outer: number, inner: number) => Math.trunc((outer - inner) / 2);
 
 // Source/ui/LabeledSlider.h's layOutAboveLabel: the label right under a square control, the pair centred
-export function layOutAboveLabel(width: number, height: number): { control: Box; label: Box } {
+export function layOutAboveLabel(width: number, height: number): { control: Rect; label: Rect } {
   const LABEL_HEIGHT = 24;
   const size = Math.max(0, Math.min(width, height - LABEL_HEIGHT));
   const top = centred(height, size + LABEL_HEIGHT);

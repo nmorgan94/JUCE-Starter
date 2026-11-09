@@ -1,9 +1,10 @@
 // Mirrors Source/ui/HoverTip.h, plus tap to toggle on touch
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
 import { juceHeight } from './fonts.ts';
+import type { Rect } from './layout.ts';
 
 // Width comes from the content
-type Box = { left: number; top: number; height: number };
+type Box = Omit<Rect, 'width'>;
 
 interface HoverTipProps {
   text: string;

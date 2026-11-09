@@ -61,6 +61,7 @@ CPMAddPackage(
 
 add_executable(Engine
     Engine.cpp
+    BuildCommit.cpp
     ../Source/dsp/Effect.cpp)
 
 target_include_directories(Engine PRIVATE ../Source)

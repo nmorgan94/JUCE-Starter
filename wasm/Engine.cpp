@@ -2,9 +2,11 @@
 #include "shared/ParameterSpecs.h"
 #include "shared/EffectSettings.h"
 #include "shared/UiInfoJson.h"
-#include <BuildInfo.h>
 #include "dsp/Effect.h"
 #include "dsp/PeakMeter.h"
+
+// BuildCommit.cpp
+extern const char* const buildCommit;
 
 //==============================================================================
 namespace
@@ -48,7 +50,7 @@ namespace
 
 EXPORT (uiInfo) const char* uiInfo()
 {
-    static const auto json = uiInfoJson (PLUGIN_VERSION, PLUGIN_GIT_COMMIT);
+    static const auto json = uiInfoJson (PLUGIN_VERSION, buildCommit);
     return json.c_str();
 }
 

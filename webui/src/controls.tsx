@@ -1,10 +1,12 @@
 // Mirrors Source/ui/LabeledSlider.h, juce::TextButton and how LookAndFeel_V4 draws them
-import { forwardRef, useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import type { PluginBackend } from './backend.ts';
 import { juceHeight } from './fonts.ts';
 import { useParam } from './hooks.ts';
-import { layOutAboveLabel, type Box } from './layout.ts';
+import { layOutAboveLabel, type Rect } from './layout.ts';
 import { formatValue, fromProportion, parseValue, toProportion } from './params.ts';
+
+export type { Rect };
 
 // juce::Slider's defaults
 const ROTARY_START = 1.2 * Math.PI;
@@ -48,7 +50,7 @@ type DragStart = { x: number; y: number; proportion: number };
 const NAME_DELAY_MS = 600;
 
 // LabeledSlider::styleLabel, as the props of the label's element
-export const styleLabel = (box: Box) => ({
+export const styleLabel = (box: Rect) => ({
   className: 'absolute flex items-center justify-center text-center font-bold leading-none',
   style: { ...box, fontSize: juceHeight(16) },
 });
@@ -169,17 +171,43 @@ export function LabeledSlider({ backend, id, label, width, height }: LabeledSlid
   );
 }
 
+const MIN_SQUEEZE = 0.7;
+
+// As drawFittedText on one line: squeezed to fit, as far as 70% wide, then cut short with "…"
+export function FittedText({ text, width }: { text: string; width: number }) {
+  const span = useRef<HTMLSpanElement>(null);
+  const [squeeze, setSqueeze] = useState(1);
+
+  useLayoutEffect(() => {
+    const measure = () => {
+      const natural = span.current?.scrollWidth ?? 0;
+      setSqueeze(natural > width ? Math.max(MIN_SQUEEZE, width / natural) : 1);
+    };
+    measure();
+    document.fonts?.ready.then(measure);
+  }, [text, width]);
+
+  return (
+    <span
+      ref={span}
+      className="inline-block shrink-0 origin-left overflow-hidden text-ellipsis whitespace-nowrap"
+      style={{ maxWidth: width / squeeze, transform: `scaleX(${squeeze})` }}
+    >
+      {text}
+    </span>
+  );
+}
+
 interface TextButtonProps {
   text: string;
   style: CSSProperties;
-  onClick(): void;
+  onClick(e: ReactMouseEvent<HTMLButtonElement>): void;
 }
 
 // LookAndFeel_V4::drawButtonBackground lightens by 5% on hover and 20% while down
-export const TextButton = forwardRef<HTMLButtonElement, TextButtonProps>(function TextButton({ text, style, onClick }, ref) {
+export function TextButton({ text, style, onClick }: TextButtonProps) {
   return (
     <button
-      ref={ref}
       type="button"
       className="absolute cursor-pointer overflow-hidden rounded-md border border-line bg-widget px-1 text-ellipsis whitespace-nowrap text-fg hover:bg-[color-mix(in_srgb,var(--color-widget),white_5%)] active:bg-[color-mix(in_srgb,var(--color-widget),white_20%)]"
       style={{ fontSize: juceHeight(12), ...style }}
@@ -188,4 +216,4 @@ export const TextButton = forwardRef<HTMLButtonElement, TextButtonProps>(functio
       {text}
     </button>
   );
-});
+}

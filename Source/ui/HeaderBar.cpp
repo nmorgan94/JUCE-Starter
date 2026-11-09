@@ -1,19 +1,21 @@
 #include "HeaderBar.h"
 #include "CustomLookAndFeel.h"
 
-HeaderBar::HeaderBar (const juce::String& titleText, PresetManager& presets, PromptOverlay& o,
-                      std::function<void()> m, const juce::String& about, PeakMeter& source)
-    : prompt (o), showManual (std::move (m)), aboutText (about),
-      presetActions (presets, prompt), presetBar (presets, presetActions), meter (source)
+namespace
 {
-    title.setText (titleText, juce::dontSendNotification);
-    title.setFont (CustomLookAndFeel::orbitron (CustomLookAndFeel::boldWeight).withHeight (18.0f));
-    title.setJustificationType (juce::Justification::centredLeft);
-    title.setBorderSize ({});
+    constexpr float minimumTitleScale = 0.7f;
+}
+
+HeaderBar::HeaderBar (const juce::String& titleText, const Layout& l, PresetManager& presets, PromptOverlay& o,
+                      std::function<void()> m, const juce::String& about, juce::Component& meterToShow)
+    : title (titleText), layout (l), prompt (o), showManual (std::move (m)), aboutText (about),
+      presetActions (presets, prompt), presetBar (presets, presetActions), meter (meterToShow)
+{
+    // For screen readers, as the title is painted
+    setTitle (title);
 
     menuButton.onClick = [this] { showMenu(); };
 
-    addAndMakeVisible (title);
     addAndMakeVisible (presetBar);
     addAndMakeVisible (menuButton);
     addAndMakeVisible (meter);
@@ -21,19 +23,26 @@ HeaderBar::HeaderBar (const juce::String& titleText, PresetManager& presets, Pro
 
 void HeaderBar::paint (juce::Graphics& g)
 {
-    g.fillAll (findColour (juce::Slider::backgroundColourId));
+    g.fillAll (findColour (backgroundColourId));
+
+    // The meter's repaints reach here too
+    const auto titleArea = getLocalBounds().withTrimmedLeft (layout.edge).withWidth (layout.titleWidth);
+    if (! g.clipRegionIntersects (titleArea))
+        return;
+
+    // Painted, so the colour comes from the LookAndFeel
+    g.setColour (findColour (titleColourId));
+    g.setFont (juce::Font (CustomLookAndFeel::orbitron (CustomLookAndFeel::boldWeight).withHeight (layout.titleHeight)));
+    g.drawFittedText (title, titleArea, juce::Justification::centredLeft, 1, minimumTitleScale);
 }
 
 void HeaderBar::resized()
 {
-    const auto bounds = getLocalBounds();
+    auto bounds = getLocalBounds().reduced (layout.edge, 0);
+    meter.setBounds (bounds.removeFromRight (layout.meterWidth).reduced (0, layout.meterInset));
 
-    const auto titleWidth = juce::GlyphArrangement::getStringWidth (title.getFont(), title.getText());
-    title.setBounds (bounds.withTrimmedLeft (12).withWidth (static_cast<int> (std::ceil (titleWidth))));
-    auto bar = bounds.withTrimmedRight (12);
-    meter.setBounds (bar.removeFromRight (LevelMeter::preferredWidth).reduced (0, 4));
-
-    auto controls = bar.withLeft (152).withTrimmedRight (12).reduced (0, 10);
+    auto controls = bounds.withTrimmedLeft (layout.titleWidth + layout.gap).withTrimmedRight (layout.gap);
+    controls = controls.withSizeKeepingCentre (controls.getWidth(), layout.controlsHeight);
     menuButton.setBounds (controls.removeFromRight (28));
     controls.removeFromRight (4);
     presetBar.setBounds (controls);

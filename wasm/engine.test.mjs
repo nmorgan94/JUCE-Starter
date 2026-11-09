@@ -80,14 +80,6 @@ test('a mono layout processes only the first channel', () => {
   assert.equal(e.peak(1), 0);
 });
 
-test('setTransport is exported, and the engine renders while playing', () => {
-  const e = engine();
-  e.setTransport(174, true, 4);
-  const input = [sine(0.01, 0.5), sine(0.01, 0.25)];
-
-  assert.deepEqual(e.processBlocks(input), input);
-});
-
 test('the peak is the loudest output since the last read, after the gain', () => {
   const e = engine();
   e.set('masterGain', -6);

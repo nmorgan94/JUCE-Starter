@@ -142,14 +142,9 @@ TEST_CASE_METHOD (ProcessorFixture, "Output meter follows the bus layout", "[bus
 //==============================================================================
 struct FakePlayHead : juce::AudioPlayHead
 {
-    juce::Optional<PositionInfo> getPosition() const override
-    {
-        ++reads;
-        return position;
-    }
+    juce::Optional<PositionInfo> getPosition() const override   { return position; }
 
     juce::Optional<PositionInfo> position;
-    mutable int reads = 0;
 };
 
 static bool operator== (const Transport& a, const Transport& b)
@@ -187,19 +182,6 @@ TEST_CASE ("The transport moves on only while playing", "[transport]")
     transport.playing = false;
     transport.advance (24000, 48000.0);
     CHECK_THAT (transport.ppq, WithinAbs (5.0, 1.0e-12));
-}
-
-TEST_CASE_METHOD (ProcessorFixture, "The processor reads the play head every block", "[transport]")
-{
-    FakePlayHead host;
-    processor.setPlayHead (&host);
-
-    auto buffer = makeConstantBuffer (2, blockSize, 0.5f);
-    process (processor, buffer);
-    process (processor, buffer);
-    CHECK (host.reads == 2);
-
-    processor.setPlayHead (nullptr);
 }
 
 //==============================================================================

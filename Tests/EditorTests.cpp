@@ -3,7 +3,6 @@
 
 #include "TestHelpers.h"
 #include "PluginEditor.h"
-#include "ui/HoverTip.h"
 #include "ui/LabeledSlider.h"
 
 using namespace TestHelpers;
@@ -120,25 +119,6 @@ TEST_CASE ("A labelled control's label goes right under a square control, the pa
     check (50, 21, { 25, -1, 0, 0 }, { 0, -1, 50, 24 });
 }
 
-TEST_CASE ("A hover tip shows while the mouse is over its target", "[editor]")
-{
-    juce::Component target;
-    HoverTip tip { target, "Tip" };
-    CHECK_FALSE (tip.isVisible());
-
-    // Called directly: JUCE only routes mouse events to a window that's on top
-    const juce::MouseEvent event (juce::Desktop::getInstance().getMainMouseSource(), {}, {},
-                                  juce::MouseInputSource::defaultPressure, 0.0f, 0.0f, 0.0f, 0.0f,
-                                  &target, &target, juce::Time::getCurrentTime(), {}, juce::Time::getCurrentTime(),
-                                  0, false);
-
-    tip.mouseEnter (event);
-    CHECK (tip.isVisible());
-
-    tip.mouseExit (event);
-    CHECK_FALSE (tip.isVisible());
-}
-
 TEST_CASE_METHOD (ProcessorFixture, "About shows the version and build type, the commit and the UI", "[editor]")
 {
     const auto lines = juce::StringArray::fromLines (About::text (processor));
@@ -182,8 +162,8 @@ TEST_CASE_METHOD (ProcessorFixture, "The editor's text is Orbitron", "[editor][f
 
     const auto labels = descendantsOf<juce::Label> (editor);
 
-    // The title, the knob's label, the overlays' titles and the prompt's message
-    REQUIRE (labels.size() == 5);
+    // The knob's label, the overlays' titles and the prompt's message
+    REQUIRE (labels.size() == 4);
 
     for (auto* label : labels)
     {

@@ -5,6 +5,7 @@
 #include "ui/CustomLookAndFeel.h"
 #include "ui/HeaderBar.h"
 #include "ui/LabeledSlider.h"
+#include "ui/LevelMeter.h"
 #include "ui/Manual.h"
 #include "ui/PromptOverlay.h"
 
@@ -13,6 +14,10 @@ class AudioPluginAudioProcessorEditor final : public juce::AudioProcessorEditor
 {
 public:
     static constexpr int width = 440, height = 312;
+
+    // As HEADER_LAYOUT in webui/src/Editor.tsx
+    static constexpr HeaderBar::Layout headerLayout { .height = 44, .edge = 12, .titleWidth = 128, .titleHeight = 18.0f,
+                                                      .gap = 12, .controlsHeight = 24, .meterWidth = LevelMeter::preferredWidth, .meterInset = 4 };
 
     explicit AudioPluginAudioProcessorEditor (AudioPluginAudioProcessor&);
     ~AudioPluginAudioProcessorEditor() override;
@@ -30,8 +35,9 @@ private:
 
     PromptOverlay prompt;
     ManualOverlay manual;
-    HeaderBar header { "JUCE STARTER", processorRef.getPresetManager(), prompt, [this] { manual.show(); },
-                       About::text (processorRef), processorRef.getOutputMeter() };
+    LevelMeter outputMeter { processorRef.getOutputMeter() };
+    HeaderBar header { "JUCE STARTER", headerLayout, processorRef.getPresetManager(), prompt, [this] { manual.show(); },
+                       About::text (processorRef), outputMeter };
 
     LabeledSlider gainKnob;
     juce::AudioProcessorValueTreeState::SliderAttachment gainAttachment {

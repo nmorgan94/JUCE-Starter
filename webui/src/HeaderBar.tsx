@@ -1,27 +1,40 @@
 // Mirrors Source/ui/HeaderBar.cpp
-import { useCallback, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import { aboutText } from './about.ts';
-import type { PluginBackend } from './backend.ts';
-import { TextButton } from './controls.tsx';
+import type { PresetBackend, UiInfo } from './backend.ts';
+import { FittedText, TextButton, type Rect } from './controls.tsx';
 import { juceHeight } from './fonts.ts';
-import { LevelMeter, PREFERRED_WIDTH } from './LevelMeter.tsx';
-import { Menu, type MenuItem, type MenuState } from './Menu.tsx';
+import { useMenu } from './Menu.tsx';
 import { presetActions } from './presetActions.ts';
 import { PresetBar } from './PresetBar.tsx';
 import type { Prompt } from './PromptOverlay.tsx';
 
-export const HEADER_HEIGHT = 44;
+// HeaderBar::Layout, which each plugin sets
+export interface HeaderLayout {
+  height: number;
+  // Left of the title, right of the meter
+  edge: number;
+  // A longer title is squeezed to fit
+  titleWidth: number;
+  titleHeight: number;
+  // Either side of the preset bar and menu
+  gap: number;
+  controlsHeight: number;
+  meterWidth: number;
+  // Above and below the meter
+  meterInset: number;
+}
 
 // HeaderBar::resized
-const layOut = (width: number) => {
-  const meter = { left: width - 12 - PREFERRED_WIDTH, top: 4, width: PREFERRED_WIDTH, height: HEADER_HEIGHT - 8 };
-  const controlsLeft = 152;
-  const controls = { left: controlsLeft, top: 10, width: meter.left - 12 - controlsLeft, height: HEADER_HEIGHT - 20 };
-  const menu = { ...controls, left: controls.left + controls.width - 28, width: 28 };
+const layOut = (width: number, layout: HeaderLayout) => {
+  const { height, edge, titleWidth, gap, controlsHeight, meterWidth, meterInset } = layout;
+  const meter: Rect = { left: width - edge - meterWidth, top: meterInset, width: meterWidth, height: height - 2 * meterInset };
+  const left = edge + titleWidth + gap;
+  const controls: Rect = { left, top: Math.trunc((height - controlsHeight) / 2), width: meter.left - gap - left, height: controlsHeight };
   return {
-    title: { left: 12, top: 0, height: HEADER_HEIGHT },
+    title: { left: edge, top: 0, width: titleWidth, height },
     meter,
-    menu,
+    menu: { ...controls, left: controls.left + controls.width - 28, width: 28 },
     presetBar: { ...controls, width: controls.width - 28 - 4 },
   };
 };
@@ -29,41 +42,40 @@ const layOut = (width: number) => {
 interface HeaderBarProps {
   title: string;
   width: number;
-  backend: PluginBackend;
+  layout: HeaderLayout;
+  backend: { info: Pick<UiInfo, 'version' | 'commit' | 'build'>; running: string; presets: PresetBackend };
   prompt: Prompt;
   showManual(): void;
+  meter(bounds: Rect): ReactNode;
 }
 
-// A fragment, not a box, so the menus stay positioned against the editor
-export function HeaderBar({ title, width, backend, prompt, showManual }: HeaderBarProps) {
-  const [menu, setMenu] = useState<MenuState | null>(null);
-  const menuButton = useRef<HTMLButtonElement>(null);
-  const closeMenu = useCallback(() => setMenu(null), []);
-  const layout = layOut(width);
+export function HeaderBar({ title, width, layout, backend, prompt, showManual, meter }: HeaderBarProps) {
+  const menu = useMenu();
+  const boxes = layOut(width, layout);
   const actions = presetActions(backend.presets, prompt);
 
-  const showMenu = async () => {
-    if (menu) return setMenu(null);
-
-    const items: MenuItem[] = [
+  const showMenu = async (button: HTMLElement) => {
+    menu.open(button, [
       ...(await actions.menuItems()),
       { kind: 'separator' },
       { kind: 'item', label: 'Manual', onSelect: showManual },
-      { kind: 'item', label: 'About', onSelect: () => prompt.showMessage('About', aboutText(backend.about)) },
-    ];
-    setMenu({ items, target: layout.menu, owner: menuButton.current });
+      { kind: 'item', label: 'About', onSelect: () => prompt.showMessage('About', aboutText(backend.info, backend.running)) },
+    ]);
   };
 
   return (
     <>
-      <div className="absolute inset-x-0 top-0 bg-widget" style={{ height: HEADER_HEIGHT }} />
-      <LevelMeter backend={backend} x={layout.meter.left} y={layout.meter.top} width={layout.meter.width} height={layout.meter.height} />
-      <div className="absolute flex items-center font-bold" style={{ ...layout.title, fontSize: juceHeight(18) }}>
-        {title}
-      </div>
-      <PresetBar presets={backend.presets} actions={actions} bounds={layout.presetBar} />
-      <TextButton ref={menuButton} text="..." style={layout.menu} onClick={() => void showMenu()} />
-      {menu && <Menu {...menu} onClose={closeMenu} />}
+      <div className="absolute inset-x-0 top-0 bg-header" style={{ height: layout.height }} />
+      <h1
+        className="absolute flex items-center font-bold whitespace-nowrap text-title"
+        style={{ ...boxes.title, fontSize: juceHeight(layout.titleHeight) }}
+      >
+        <FittedText text={title} width={layout.titleWidth} />
+      </h1>
+      <PresetBar presets={backend.presets} actions={actions} bounds={boxes.presetBar} />
+      <TextButton text="..." style={boxes.menu} onClick={(e) => void showMenu(e.currentTarget)} />
+      {menu.element}
+      {meter(boxes.meter)}
     </>
   );
 }

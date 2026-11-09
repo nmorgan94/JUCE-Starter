@@ -35,7 +35,7 @@ namespace
         return names;
     }
 
-    // The same order as webui/test/demo/localPresets.test.ts
+    // The same order as webui/test/demo/presetState.test.ts
     const juce::StringArray factoryNames { "Boost +3", "Boost +6", "Cut -6", "Cut -12", "Cut -24" };
 }
 
@@ -76,6 +76,17 @@ TEST_CASE_METHOD (PresetFixture, "Moving a parameter marks the preset modified u
     REQUIRE (presets.loadPreset (presets.find ("Boost +3", true).value()));
     CHECK_FALSE (presets.isModified());
     CHECK_THAT (gain(), WithinAbs (3.0, 1.0e-4));
+}
+
+TEST_CASE_METHOD (PresetFixture, "Changing state outside the parameters marks the preset modified", "[presets]")
+{
+    REQUIRE (presets.loadPreset (presets.find ("Boost +3", true).value()));
+
+    processor.updateHostDisplay (juce::AudioProcessor::ChangeDetails{}.withProgramChanged (true));
+    CHECK_FALSE (presets.isModified());
+
+    processor.updateHostDisplay (juce::AudioProcessor::ChangeDetails{}.withNonParameterStateChanged (true));
+    CHECK (presets.isModified());
 }
 
 TEST_CASE_METHOD (PresetFixture, "Init restores the defaults", "[presets]")

@@ -1,5 +1,6 @@
-import { paramLookup, type Level, type PluginBackend, type UiInfo } from '../backend.ts';
-import { localPresets, type PresetStorage, type StoredPreset } from './localPresets.ts';
+import { listenerSet, paramLookup, type Level, type PluginBackend, type UiInfo } from '../backend.ts';
+import { localPresets, type PresetStorage } from './localPresets.ts';
+import { INIT_STATE, parseState, STORAGE_KEY, type PresetState } from './presetState.ts';
 
 // WASI imports are never called
 export const stubImports = () => {
@@ -37,10 +38,9 @@ export type WorkletBackend = PluginBackend & {
   setTransport(transport: Transport): void;
 };
 
-export function workletBackend(info: UiInfo, factoryPresets: StoredPreset[] = [], storage?: PresetStorage): WorkletBackend {
-  const entry = paramLookup(new Map(info.params.map((param, index) => [param.id, { param, index, value: param.defaultValue }])));
-  const listeners = new Map<string, Set<(value: number) => void>>();
-  const levelListeners = new Set<(level: Level) => void>();
+export function workletBackend(info: UiInfo, factoryPresets: string[] = [], storage?: PresetStorage): WorkletBackend {
+  const entry = paramLookup(new Map(info.params.map((param, index) => [param.id, { param, index, value: param.defaultValue, listeners: listenerSet<[number]>() }])));
+  const levelListeners = listenerSet<[Level]>();
   let port: EnginePort | null = null;
   // Sent once the worklet attaches
   let pending: unknown[] = [];
@@ -54,20 +54,23 @@ export function workletBackend(info: UiInfo, factoryPresets: StoredPreset[] = []
     const found = entry(id);
     post({ type: 'param', index: found.index, value });
     found.value = value;
-    listeners.get(id)?.forEach((listener) => listener(value));
+    found.listeners.notify(value);
   };
 
-  const presets = localPresets({
-    factory: factoryPresets,
+  const presets = localPresets<PresetState>({
+    storageKey: STORAGE_KEY,
     storage,
-    defaults: Object.fromEntries(info.params.map((param) => [param.id, param.defaultValue])),
-    values: () => Object.fromEntries(info.params.map((param) => [param.id, entry(param.id).value])),
+    factory: factoryPresets,
+    parse: parseState,
+    init: INIT_STATE,
+    capture: () => ({ values: Object.fromEntries(info.params.map(({ id }) => [id, entry(id).value])) }),
     // Ids this engine doesn't have are skipped, as the APVTS skips them
-    apply: (values) => info.params.forEach(({ id }) => id in values && apply(id, values[id]!)),
+    apply: ({ values }) => info.params.forEach(({ id, defaultValue }) => apply(id, values[id] ?? defaultValue)),
   });
 
   return {
-    about: { version: info.version, commit: info.commit, build: info.build, running: 'Web demo' },
+    info,
+    running: 'Web demo',
     presets,
     param: (id) => entry(id).param,
     getValue: (id) => entry(id).value,
@@ -77,20 +80,13 @@ export function workletBackend(info: UiInfo, factoryPresets: StoredPreset[] = []
     },
     beginGesture: () => {},
     endGesture: () => {},
-    subscribe: (id, listener) => {
-      const set = listeners.get(id) ?? new Set();
-      listeners.set(id, set.add(listener));
-      return () => set.delete(listener);
-    },
-    onLevel: (listener) => {
-      levelListeners.add(listener);
-      return () => levelListeners.delete(listener);
-    },
+    subscribe: (id, listener) => entry(id).listeners.add(listener),
+    onLevel: levelListeners.add,
     setTransport: (transport) => post({ type: 'transport', ...transport }),
     attach: (enginePort) => {
       port = enginePort;
       port.onmessage = ({ data }) => {
-        if (data.type === 'level') levelListeners.forEach((listener) => listener({ peaks: data.peaks }));
+        if (data.type === 'level') levelListeners.notify({ peaks: data.peaks });
       };
       pending.forEach((message) => enginePort.postMessage(message));
       pending = [];
