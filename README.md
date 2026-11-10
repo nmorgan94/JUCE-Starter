@@ -204,3 +204,16 @@ juce_add_plugin(${PROJECT_NAME}
     # ... other options
 )
 ```
+
+`COMPANY_NAME` also salts the machine code and names the licence file
+(`<COMPANY_NAME>/<COMPANY_NAME>.licence`), so it can't change once a plugin has shipped.
+
+The licence signing keys the plugin trusts come from the `LICENCE_KEYS` environment variable, read
+when CMake configures. A build folder remembers the keys it was last given, so only its first
+configure needs the variable; to change them, configure with the variable set. With no keys, no
+licence verifies; if a `.env` exists, configuring fails instead, so a forgotten `source .env` is caught.
+
+```bash
+cp .env.example .env   # then fill in LICENCE_KEYS; .env is ignored by git
+source .env            # before configuring
+```

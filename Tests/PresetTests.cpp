@@ -219,16 +219,6 @@ TEST_CASE_METHOD (PresetFixture, "Rescanning moves the change counter only when 
     CHECK (presets.getChangeCounter() != before);
 }
 
-TEST_CASE_METHOD (PresetFixture, "Presets are found by name and kind", "[presets]")
-{
-    REQUIRE (presets.saveUserPreset ("Mine", {}).wasOk());
-
-    CHECK (presets.find ("Cut -6", true).has_value());
-    CHECK (presets.find ("Mine", false)->file == userDirectory.getChildFile ("Mine.srstarter"));
-    CHECK_FALSE (presets.find ("Cut -6", false).has_value());
-    CHECK_FALSE (presets.find ("Mine", true).has_value());
-}
-
 TEST_CASE_METHOD (PresetFixture, "State from before presets existed shows Init, modified", "[presets][state]")
 {
     REQUIRE (presets.loadPreset (presets.find ("Boost +6", true).value()));

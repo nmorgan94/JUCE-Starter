@@ -20,6 +20,8 @@ jobs:
         os: [macos-latest, windows-latest]
     env:
       CMAKE_BUILD_PARALLEL_LEVEL: 4
+      # A repository variable; unset means the plugins verify no licence
+      LICENCE_KEYS: ${{ vars.LICENCE_KEYS }}
     steps:
       - uses: actions/checkout@v7
 

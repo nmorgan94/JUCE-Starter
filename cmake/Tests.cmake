@@ -2,7 +2,7 @@
 # each test case with CTest. The tests drive the AudioProcessor directly, the way a host
 # would, so they check what the plugin does to audio and state rather than just that it loads.
 #
-# Usage (from the top-level CMakeLists.txt, AFTER juce_add_plugin and add_pluginval_tests):
+# Usage (from the top-level CMakeLists.txt, AFTER juce_add_plugin, add_pluginval_tests and add_licensing):
 #     include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Tests.cmake)
 #     add_unit_tests(${PROJECT_NAME})
 
@@ -43,6 +43,12 @@ function(add_unit_tests pluginTarget)
         return()
     endif()
 
+    get_target_property(pluginLibraries ${pluginTarget} LINK_LIBRARIES)
+
+    if(NOT "licensing" IN_LIST pluginLibraries)
+        message(FATAL_ERROR "unit tests: Tests/LicenceTests.cpp needs add_licensing(${pluginTarget}) called before add_unit_tests")
+    endif()
+
     set(testTarget "${pluginTarget}_Tests")
 
     file(GLOB_RECURSE TestFiles
@@ -64,6 +70,10 @@ function(add_unit_tests pluginTarget)
     target_include_directories(${testTarget} PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}/Source"
         $<TARGET_PROPERTY:${pluginTarget},INCLUDE_DIRECTORIES>)
+
+    target_compile_definitions(${testTarget} PRIVATE
+        LICENCE_FIXTURES_DIR="${CMAKE_CURRENT_SOURCE_DIR}/Tests/fixtures/licence"
+        LICENCE_KEYS="${LICENCE_KEYS}")
 
     target_link_libraries(${testTarget} PRIVATE
         ${pluginTarget}

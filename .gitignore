@@ -132,6 +132,9 @@ Builds/
 *.swo
 *~
 
+# Local settings
+.env
+
 # Package managers
 node_modules/
 .npm/

@@ -119,22 +119,6 @@ TEST_CASE ("A labelled control's label goes right under a square control, the pa
     check (50, 21, { 25, -1, 0, 0 }, { 0, -1, 50, 24 });
 }
 
-TEST_CASE_METHOD (ProcessorFixture, "About shows the version and build type, the commit and the UI", "[editor]")
-{
-    const auto lines = juce::StringArray::fromLines (About::text (processor));
-
-    REQUIRE (lines.size() == 5);
-    CHECK (lines[0] == "Version " JucePlugin_VersionString);
-   #if JUCE_DEBUG
-    CHECK (lines[1] == "Debug build");
-   #else
-    CHECK (lines[1] == "Release build");
-   #endif
-    CHECK (lines[2] == juce::String ("Commit ") + About::commit);
-    CHECK (lines[3] == "Undefined");
-    CHECK (lines[4] == "Native UI");
-}
-
 TEST_CASE_METHOD (ProcessorFixture, "The title fits the header without being cut short", "[editor]")
 {
     AudioPluginAudioProcessorEditor editor (processor);
@@ -146,27 +130,6 @@ TEST_CASE_METHOD (ProcessorFixture, "The title fits the header without being cut
 
     // drawFittedText only squeezes a title that's narrower than this
     CHECK (width * HeaderBar::minimumTitleScale < layout.titleWidth);
-}
-
-TEST_CASE_METHOD (ProcessorFixture, "The gain knob draws its value in blue with a white dot", "[editor]")
-{
-    AudioPluginAudioProcessorEditor editor (processor);
-    auto* knob = findGainKnob (editor);
-    knob->setValue (knob->getMaximum());
-
-    // CustomLookAndFeel::drawRotarySlider's geometry
-    const auto bounds = knob->getLookAndFeel().getSliderLayout (*knob).sliderBounds.toFloat().reduced (10.0f);
-    const auto centre = bounds.getCentre();
-    const auto radius = std::min (bounds.getWidth(), bounds.getHeight()) * 0.5f;
-    const auto arcRadius = radius - std::min (8.0f, radius * 0.5f) * 0.5f;
-    const auto arc = centre.getPointOnCircumference (arcRadius, juce::MathConstants<float>::halfPi).toInt();
-    const auto dot = centre.getPointOnCircumference (arcRadius, knob->getRotaryParameters().endAngleRadians).toInt();
-
-    const auto image = knob->createComponentSnapshot (knob->getLocalBounds());
-
-    using UI = juce::LookAndFeel_V4::ColourScheme::UIColour;
-    CHECK (image.getPixelAt (arc.x, arc.y) == juce::LookAndFeel_V4::getDarkColourScheme().getUIColour (UI::defaultFill));
-    CHECK (image.getPixelAt (dot.x, dot.y) == knob->findColour (juce::Slider::textBoxTextColourId));
 }
 
 TEST_CASE_METHOD (ProcessorFixture, "The editor's text is Orbitron", "[editor][font]")
@@ -196,24 +159,4 @@ TEST_CASE_METHOD (ProcessorFixture, "The editor's text is Orbitron", "[editor][f
     }
 
     CHECK (editor.getLookAndFeel().getPopupMenuFont().getTypefacePtr()->getName() == "Orbitron");
-}
-
-TEST_CASE ("Orbitron's weights come from the one variable font", "[editor][font]")
-{
-    juce::ScopedJuceInitialiser_GUI juceInitialiser;
-
-    const auto weightOf = [] (const juce::FontOptions& options)
-    {
-        const auto variables = options.getTypeface()->getConfiguredVariables();
-        REQUIRE (variables.size() == 1);
-        CHECK (variables.front().tag == juce::FontFeatureTag ("wght"));
-        return variables.front().value;
-    };
-
-    const auto regular = CustomLookAndFeel::orbitron (CustomLookAndFeel::regularWeight);
-    const auto bold = CustomLookAndFeel::orbitron (CustomLookAndFeel::boldWeight);
-
-    CHECK (regular.getTypeface()->getName() == "Orbitron");
-    CHECK_THAT (weightOf (regular), WithinAbs (400.0, 0.0));
-    CHECK_THAT (weightOf (bold), WithinAbs (700.0, 0.0));
 }

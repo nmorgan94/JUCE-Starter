@@ -195,6 +195,9 @@ if(WIN32)
         COMMENT "Installing VST3 into ${vst3CopyDir}")
 endif()
 
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Licensing.cmake)
+add_licensing(${PROJECT_NAME})
+
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Pluginval.cmake)
 add_pluginval_tests(${PROJECT_NAME})
 
