@@ -2,6 +2,7 @@
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
 #include "TestHelpers.h"
+#include "ui/PresetActions.h"
 
 using namespace TestHelpers;
 using Catch::Matchers::WithinAbs;
@@ -182,6 +183,25 @@ TEST_CASE_METHOD (PresetFixture, "Next and previous step past a preset that won'
     CHECK (presets.getCurrent().name == factoryNames[0]);
 
     REQUIRE (presets.loadPrevious());
+    CHECK (presets.getCurrent().name == "A");
+}
+
+TEST_CASE_METHOD (PresetFixture, "Choosing a preset that won't load says so, and keeps the current one", "[presets][ui]")
+{
+    OverlayFixture overlay;
+    PromptOverlay prompt;
+    overlay.parent.addChildComponent (prompt);
+    PresetActions actions { presets, prompt };
+
+    REQUIRE (presets.saveUserPreset ("A", {}).wasOk());
+    REQUIRE (userDirectory.getChildFile ("Broken.srstarter").replaceWithText ("not a preset"));
+    presets.refreshUserPresets();
+
+    actions.load (presets.find ("A", false).value());
+    CHECK_FALSE (prompt.isVisible());
+
+    actions.load (presets.find ("Broken", false).value());
+    CHECK (prompt.isVisible());
     CHECK (presets.getCurrent().name == "A");
 }
 

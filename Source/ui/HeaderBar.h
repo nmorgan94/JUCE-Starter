@@ -30,6 +30,9 @@ public:
         int meterInset;     // above and below the meter
     };
 
+    static constexpr float minimumTitleScale = 0.7f;
+    static juce::Font titleFont (const Layout&);
+
     HeaderBar (const juce::String& title, const Layout&, PresetManager&, PromptOverlay&,
                std::function<void()> showManual, const juce::String& aboutText, juce::Component& meter);
 
@@ -37,7 +40,6 @@ public:
     void resized() override;
 
 private:
-    const juce::String title;
     const Layout layout;
     PromptOverlay& prompt;
     const std::function<void()> showManual;

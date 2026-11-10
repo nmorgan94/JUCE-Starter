@@ -167,10 +167,8 @@ juce::WebBrowserComponent::Options WebViewEditor::withPresetFunctions (const juc
         })
         .withNativeFunction ("presetLoad", [&presets] (const Args& args, Completion complete)
         {
-            if (const auto preset = findPreset (presets, args[0]))
-                presets.loadPreset (*preset);
-
-            complete ({});
+            const auto preset = findPreset (presets, args[0]);
+            complete (preset.has_value() && presets.loadPreset (*preset));
         })
         .withNativeFunction ("presetInit", [&presets] (const Args&, Completion complete)
         {

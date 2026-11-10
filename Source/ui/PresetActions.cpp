@@ -19,6 +19,12 @@ void PresetActions::addMenuItems (juce::PopupMenu& menu)
 }
 
 //==============================================================================
+void PresetActions::load (const PresetManager::Preset& preset)
+{
+    if (! presets.loadPreset (preset))
+        prompt.showMessage ("Preset", "\"" + preset.name + "\" couldn't be loaded.");
+}
+
 void PresetActions::save()
 {
     // User presets save in place; anything else needs a name first

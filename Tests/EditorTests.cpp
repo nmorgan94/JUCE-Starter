@@ -135,6 +135,19 @@ TEST_CASE_METHOD (ProcessorFixture, "About shows the version and build type, the
     CHECK (lines[4] == "Native UI");
 }
 
+TEST_CASE_METHOD (ProcessorFixture, "The title fits the header without being cut short", "[editor]")
+{
+    AudioPluginAudioProcessorEditor editor (processor);
+    const auto headers = descendantsOf<HeaderBar> (editor);
+    REQUIRE (headers.size() == 1);
+
+    const auto& layout = AudioPluginAudioProcessorEditor::headerLayout;
+    const auto width = juce::GlyphArrangement::getStringWidth (HeaderBar::titleFont (layout), headers[0]->getTitle());
+
+    // drawFittedText only squeezes a title that's narrower than this
+    CHECK (width * HeaderBar::minimumTitleScale < layout.titleWidth);
+}
+
 TEST_CASE_METHOD (ProcessorFixture, "The gain knob draws its value in blue with a white dot", "[editor]")
 {
     AudioPluginAudioProcessorEditor editor (processor);

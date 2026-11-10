@@ -18,6 +18,15 @@ interface ModalProps {
   children: ReactNode;
 }
 
+// Tab stays inside the overlay, going round its controls
+const wrapTab = (e: KeyboardEvent<HTMLElement>) => {
+  e.preventDefault();
+  const controls = [...e.currentTarget.querySelectorAll<HTMLElement>('a[href], button, input')];
+  const index = controls.findIndex((control) => control === e.target);
+  const next = index < 0 ? (e.shiftKey ? -1 : 0) : index + (e.shiftKey ? -1 : 1);
+  controls.at(next % controls.length)?.focus();
+};
+
 export function Modal({ label, titleInset, panel, onClose, onPanelKey, focus, children }: ModalProps) {
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -25,12 +34,14 @@ export function Modal({ label, titleInset, panel, onClose, onPanelKey, focus, ch
 
   return (
     <div
-      className="absolute inset-0 z-50 flex items-center justify-center bg-overlay-dim"
+      tabIndex={-1}
+      className="absolute inset-0 z-50 flex items-center justify-center bg-overlay-dim outline-none"
       onPointerDown={(e) => e.stopPropagation()}
       onKeyDown={(e) => {
         // Nothing behind the overlay gets keys
         e.stopPropagation();
         if (e.key === 'Escape') onClose();
+        else if (e.key === 'Tab') wrapTab(e);
         else onPanelKey?.(e);
       }}
     >

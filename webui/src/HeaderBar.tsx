@@ -1,7 +1,7 @@
 // Mirrors Source/ui/HeaderBar.cpp
 import type { ReactNode } from 'react';
-import { aboutText } from './about.ts';
-import type { PresetBackend, UiInfo } from './backend.ts';
+import { aboutText, type About } from './about.ts';
+import type { PresetBackend } from './backend.ts';
 import { FittedText, TextButton, type Rect } from './controls.tsx';
 import { juceHeight } from './fonts.ts';
 import { useMenu } from './Menu.tsx';
@@ -43,7 +43,7 @@ interface HeaderBarProps {
   title: string;
   width: number;
   layout: HeaderLayout;
-  backend: { info: Pick<UiInfo, 'version' | 'commit' | 'build'>; running: string; presets: PresetBackend };
+  backend: { info: About; running: string; presets: PresetBackend };
   prompt: Prompt;
   showManual(): void;
   meter(bounds: Rect): ReactNode;

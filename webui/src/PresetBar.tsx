@@ -33,7 +33,7 @@ export function PresetBar({ presets, actions, bounds }: PresetBarProps) {
       kind: 'item',
       label: preset.name,
       ticked: isSamePreset(preset, current),
-      onSelect: () => void presets.load(preset),
+      onSelect: () => void actions.load(preset),
     });
 
     // Factory presets by category, user presets flat

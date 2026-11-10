@@ -5,13 +5,14 @@
 
 //==============================================================================
 /**
- * Saving, renaming and deleting presets, with the prompts they need.
+ * Loading, saving, renaming and deleting presets, with the prompts they need.
  */
 class PresetActions
 {
 public:
     PresetActions (PresetManager&, PromptOverlay&);
 
+    void load (const PresetManager::Preset&);
     void save();
     void addMenuItems (juce::PopupMenu&);
 

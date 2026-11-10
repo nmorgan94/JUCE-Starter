@@ -27,7 +27,7 @@ function pluginPresets(initial: PresetStatus): PresetBackend {
     onStatus: listeners.add,
     list: async () => (await call('presetList')) as PresetEntry[],
     current: async () => ((await call('presetCurrent')) as PresetEntry | null | undefined) ?? null,
-    load: async (preset) => void (await call('presetLoad', preset)),
+    load: async (preset) => (await call('presetLoad', preset)) === true,
     loadInit: async () => void (await call('presetInit')),
     loadNext: async () => void (await call('presetStep', 1)),
     loadPrevious: async () => void (await call('presetStep', -1)),

@@ -4,6 +4,7 @@ import type { MenuItem } from './Menu.tsx';
 import type { Prompt } from './PromptOverlay.tsx';
 
 export interface PresetActions {
+  load(preset: PresetEntry): Promise<void>;
   save(): Promise<void>;
   menuItems(): Promise<MenuItem[]>;
 }
@@ -16,6 +17,10 @@ export function presetActions(presets: PresetBackend, prompt: Prompt): PresetAct
   const currentUserPreset = async () => {
     const current = await presets.current();
     return current && !current.isFactory ? current : undefined;
+  };
+
+  const load = async (preset: PresetEntry) => {
+    if (!(await presets.load(preset))) prompt.showMessage('Preset', `"${preset.name}" couldn't be loaded.`);
   };
 
   const saveAs = () => {
@@ -55,5 +60,5 @@ export function presetActions(presets: PresetBackend, prompt: Prompt): PresetAct
     return items;
   };
 
-  return { save, menuItems };
+  return { load, save, menuItems };
 }

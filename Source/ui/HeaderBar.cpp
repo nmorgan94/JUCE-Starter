@@ -1,14 +1,9 @@
 #include "HeaderBar.h"
 #include "CustomLookAndFeel.h"
 
-namespace
-{
-    constexpr float minimumTitleScale = 0.7f;
-}
-
-HeaderBar::HeaderBar (const juce::String& titleText, const Layout& l, PresetManager& presets, PromptOverlay& o,
+HeaderBar::HeaderBar (const juce::String& title, const Layout& l, PresetManager& presets, PromptOverlay& o,
                       std::function<void()> m, const juce::String& about, juce::Component& meterToShow)
-    : title (titleText), layout (l), prompt (o), showManual (std::move (m)), aboutText (about),
+    : layout (l), prompt (o), showManual (std::move (m)), aboutText (about),
       presetActions (presets, prompt), presetBar (presets, presetActions), meter (meterToShow)
 {
     // For screen readers, as the title is painted
@@ -19,6 +14,11 @@ HeaderBar::HeaderBar (const juce::String& titleText, const Layout& l, PresetMana
     addAndMakeVisible (presetBar);
     addAndMakeVisible (menuButton);
     addAndMakeVisible (meter);
+}
+
+juce::Font HeaderBar::titleFont (const Layout& l)
+{
+    return CustomLookAndFeel::orbitron (CustomLookAndFeel::boldWeight).withHeight (l.titleHeight);
 }
 
 void HeaderBar::paint (juce::Graphics& g)
@@ -32,8 +32,8 @@ void HeaderBar::paint (juce::Graphics& g)
 
     // Painted, so the colour comes from the LookAndFeel
     g.setColour (findColour (titleColourId));
-    g.setFont (juce::Font (CustomLookAndFeel::orbitron (CustomLookAndFeel::boldWeight).withHeight (layout.titleHeight)));
-    g.drawFittedText (title, titleArea, juce::Justification::centredLeft, 1, minimumTitleScale);
+    g.setFont (titleFont (layout));
+    g.drawFittedText (getTitle(), titleArea, juce::Justification::centredLeft, 1, minimumTitleScale);
 }
 
 void HeaderBar::resized()

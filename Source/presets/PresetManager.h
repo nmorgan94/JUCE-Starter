@@ -76,7 +76,6 @@ public:
     std::optional<Preset> getCurrentPreset() const;
 
     bool isModified() const noexcept                 { return modified.load(); }
-    void markModified() noexcept;
     juce::uint32 getChangeCounter() const noexcept   { return changeCounter.load(); }
 
     //==============================================================================
@@ -109,6 +108,7 @@ private:
     juce::String getCurrentType() const;
     std::unique_ptr<juce::XmlElement> createPresetXml (const juce::String& name, const juce::String& category) const;
     void setCurrent (const CurrentPreset&, bool isModified);
+    void markModified() noexcept;
     bool step (int delta);
 
     void audioProcessorParameterChanged (juce::AudioProcessor*, int, float) override;

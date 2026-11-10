@@ -63,8 +63,9 @@ export function localPresets<S extends object>({ storageKey, storage, factory, p
   const listeners = listenerSet<[PresetStatus]>();
 
   const read = () => {
+    if (!storage) return;
     try {
-      const stored = JSON.parse(storage?.getItem(storageKey) ?? '[]') as StoredPreset<S>[];
+      const stored = JSON.parse(storage.getItem(storageKey) ?? '[]') as StoredPreset<S>[];
       users = sorted(stored.map((preset) => ({ ...preset, isFactory: false })));
     } catch {
       // Unreadable storage keeps what's already listed
@@ -76,6 +77,7 @@ export function localPresets<S extends object>({ storageKey, storage, factory, p
       storage?.setItem(storageKey, JSON.stringify(users.map(({ isFactory: _, ...stored }) => stored)));
     } catch {
       // Private windows can refuse storage; the presets last until the page closes
+      storage = undefined;
     }
   };
 
@@ -127,8 +129,10 @@ export function localPresets<S extends object>({ storageKey, storage, factory, p
       return find(status.current) ?? null;
     },
     load: async (preset) => {
+      read();
       const found = find(preset);
       if (found) load(found);
+      return found !== undefined;
     },
     loadInit: async () => load({ ...init, ...INIT }),
     loadNext: () => step(1),

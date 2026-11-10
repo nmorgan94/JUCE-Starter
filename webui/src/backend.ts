@@ -42,9 +42,10 @@ export interface PresetBackend {
   onStatus(listener: (status: PresetStatus) => void): () => void;
   // Factory then user presets, rescanning the user ones
   list(): Promise<PresetEntry[]>;
-  // The current preset if it's listed, without a rescan
+  // The current preset if it's listed
   current(): Promise<PresetEntry | null>;
-  load(preset: PresetEntry): Promise<void>;
+  // Resolves to whether it loaded
+  load(preset: PresetEntry): Promise<boolean>;
   loadInit(): Promise<void>;
   loadNext(): Promise<void>;
   loadPrevious(): Promise<void>;

@@ -100,6 +100,6 @@ void PresetBar::showPresetMenu()
                         [safeThis = juce::Component::SafePointer (this), listed = std::move (presetList)] (int result)
                         {
                             if (safeThis != nullptr && result > 0)
-                                safeThis->presets.loadPreset (listed.getReference (result - 1));
+                                safeThis->actions.load (listed.getReference (result - 1));
                         });
 }
