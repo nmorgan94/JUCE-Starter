@@ -90,9 +90,6 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SourceFiles})
 # Make the SourceFiles buildable
 target_sources(${PROJECT_NAME} PRIVATE ${SourceFiles})
 
-include(${SampleRealm-Modules_SOURCE_DIR}/cmake/BuildInfo.cmake)
-add_build_info(${PROJECT_NAME})
-
 include(${SampleRealm-Modules_SOURCE_DIR}/cmake/Core.cmake)
 add_plugin_core(${PROJECT_NAME})
 
@@ -107,43 +104,8 @@ target_compile_definitions(${PROJECT_NAME}
 )
 
 if(PLUGIN_WEBVIEW_EDITOR)
-    find_program(NPM_EXECUTABLE npm REQUIRED)
-
-    set(uiDir "${CMAKE_CURRENT_SOURCE_DIR}/webui")
-    set(webUiZip "${CMAKE_CURRENT_BINARY_DIR}/WebUI.zip")
-
-    file(GLOB_RECURSE uiInputs CONFIGURE_DEPENDS
-        "${uiDir}/src/*" "${SampleRealm-Modules_SOURCE_DIR}/web/*" "${uiDir}/package*.json" "${uiDir}/vite.config.ts" "${CMAKE_CURRENT_SOURCE_DIR}/Assets/*")
-    list(FILTER uiInputs EXCLUDE REGEX "/src/demo/|/web/(demo|testing)/")
-
-    # npm writes this on every install
-    set(npmInstalled "${uiDir}/node_modules/.package-lock.json")
-
-    add_custom_command(OUTPUT "${npmInstalled}"
-        COMMAND ${NPM_EXECUTABLE} ci --no-audit --no-fund
-        WORKING_DIRECTORY "${uiDir}"
-        DEPENDS "${uiDir}/package.json" "${uiDir}/package-lock.json"
-        VERBATIM)
-
-    add_custom_command(OUTPUT "${webUiZip}"
-        COMMAND ${NPM_EXECUTABLE} run typecheck
-        COMMAND ${NPM_EXECUTABLE} run build:plugin
-        COMMAND ${CMAKE_COMMAND} -E chdir "${uiDir}/dist/plugin"
-                ${CMAKE_COMMAND} -E tar cf "${webUiZip}" --format=zip .
-        WORKING_DIRECTORY "${uiDir}"
-        DEPENDS ${uiInputs} "${npmInstalled}"
-        VERBATIM)
-
-    juce_add_binary_data(${PROJECT_NAME}_WebUI
-        HEADER_NAME "WebUIData.h"
-        NAMESPACE WebUIData
-        SOURCES "${webUiZip}")
-
-    target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_NAME}_WebUI)
-
-    if(APPLE)
-        set_source_files_properties(Source/webview/WebViewEditor.cpp PROPERTIES COMPILE_OPTIONS -xobjective-c++)
-    endif()
+    include(${SampleRealm-Modules_SOURCE_DIR}/cmake/WebUi.cmake)
+    add_webview_ui(${PROJECT_NAME})
 endif()
 
 # Binary assets (images, fonts, etc.)
@@ -197,8 +159,11 @@ endif()
 include(${SampleRealm-Modules_SOURCE_DIR}/cmake/Licensing.cmake)
 add_licensing(${PROJECT_NAME})
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Pluginval.cmake)
+include(${SampleRealm-Modules_SOURCE_DIR}/cmake/Editor.cmake)
+add_plugin_editor(${PROJECT_NAME})
+
+include(${SampleRealm-Modules_SOURCE_DIR}/cmake/Pluginval.cmake)
 add_pluginval_tests(${PROJECT_NAME})
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Tests.cmake)
+include(${SampleRealm-Modules_SOURCE_DIR}/cmake/Tests.cmake)
 add_unit_tests(${PROJECT_NAME})

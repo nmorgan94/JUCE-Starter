@@ -1,14 +1,15 @@
 // Mirrors AudioPluginAudioProcessorEditor::resized()
 import { memo, useState } from 'react';
-import { ActivationBar } from './ActivationBar.tsx';
+import { ActivationBar } from '@samplerealm/modules/editor/ActivationBar.tsx';
+import { EditorRootContext } from '@samplerealm/modules/editor/editorRoot.ts';
+import { HeaderBar, type HeaderLayout } from '@samplerealm/modules/editor/HeaderBar.tsx';
+import { LabeledSlider } from '@samplerealm/modules/editor/LabeledSlider.tsx';
+import { centred } from '@samplerealm/modules/editor/layout.ts';
+import { LevelMeter, PREFERRED_WIDTH } from '@samplerealm/modules/editor/LevelMeter.tsx';
+import { useManual } from '@samplerealm/modules/editor/ManualOverlay.tsx';
+import { usePrompt } from '@samplerealm/modules/editor/PromptOverlay.tsx';
+import manualText from '../../Assets/Manual.md?raw';
 import type { PluginBackend } from './backend.ts';
-import { LabeledSlider } from './controls.tsx';
-import { EditorRootContext } from './editorRoot.ts';
-import { HeaderBar, type HeaderLayout } from './HeaderBar.tsx';
-import { centred } from './layout.ts';
-import { LevelMeter, PREFERRED_WIDTH } from './LevelMeter.tsx';
-import { useManual } from './ManualOverlay.tsx';
-import { usePrompt } from './PromptOverlay.tsx';
 
 export const EDITOR_WIDTH = 440;
 export const EDITOR_HEIGHT = 312;
@@ -35,7 +36,7 @@ const knobTop = centred(CONTENT_HEIGHT, KNOB_AREA.height);
 export const Editor = memo(function Editor({ backend }: { backend: PluginBackend }) {
   const [root, setRoot] = useState<HTMLDivElement | null>(null);
   const { prompt, overlay } = usePrompt();
-  const manual = useManual();
+  const manual = useManual(manualText);
 
   return (
     <EditorRootContext.Provider value={root}>

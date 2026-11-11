@@ -1,5 +1,5 @@
 import { createRoot } from 'react-dom/client';
-import { pluginBackend } from './pluginBackend.ts';
+import { pluginBackend } from '@samplerealm/modules/plugin/pluginBackend.ts';
 import { Editor } from '../Editor.tsx';
 import './styles.css';
 

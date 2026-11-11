@@ -2,7 +2,6 @@
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
 #include "TestHelpers.h"
-#include "ui/PresetActions.h"
 
 using namespace TestHelpers;
 using Catch::Matchers::WithinAbs;
@@ -188,9 +187,10 @@ TEST_CASE_METHOD (PresetFixture, "Next and previous step past a preset that won'
 
 TEST_CASE_METHOD (PresetFixture, "Choosing a preset that won't load says so, and keeps the current one", "[presets][ui]")
 {
-    OverlayFixture overlay;
+    juce::Component parent;
+    parent.setSize (AudioPluginAudioProcessorEditor::width, AudioPluginAudioProcessorEditor::height);
     PromptOverlay prompt;
-    overlay.parent.addChildComponent (prompt);
+    parent.addChildComponent (prompt);
     PresetActions actions { presets, prompt };
 
     REQUIRE (presets.saveUserPreset ("A", {}).wasOk());

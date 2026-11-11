@@ -1,14 +1,8 @@
 #pragma once
 
 #include "PluginProcessor.h"
-#include "ui/About.h"
-#include "ui/ActivationBar.h"
 #include "ui/CustomLookAndFeel.h"
-#include "ui/HeaderBar.h"
-#include "ui/LabeledSlider.h"
-#include "ui/LevelMeter.h"
-#include "ui/Manual.h"
-#include "ui/PromptOverlay.h"
+#include <BinaryData.h>
 
 //==============================================================================
 class AudioPluginAudioProcessorEditor final : public juce::AudioProcessorEditor
@@ -35,7 +29,7 @@ private:
     CustomLookAndFeel customLookAndFeel;
 
     PromptOverlay prompt;
-    ManualOverlay manual;
+    ManualOverlay manual { juce::String::createStringFromData (BinaryData::Manual_md, BinaryData::Manual_mdSize) };
     LevelMeter outputMeter { processorRef.getOutputMeter() };
     HeaderBar header { "JUCE STARTER", headerLayout, processorRef.getPresetManager(), prompt, [this] { manual.show(); },
                        About::text (processorRef), outputMeter };

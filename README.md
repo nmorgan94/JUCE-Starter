@@ -36,7 +36,7 @@ demo. Each plugin writes its own. Only this much Markdown is read:
 - Any other line is text, joined to the paragraph or bullet above until a blank line
 - No inline formatting, links or images
 
-`Source/ui/Manual.cpp` and `webui/src/manual.ts` parse it; their tests share one sample, so change both together.
+SampleRealm-Modules' `editor/Manual.cpp` and `web/editor/manual.ts` parse it.
 
 ## Prerequisites
 

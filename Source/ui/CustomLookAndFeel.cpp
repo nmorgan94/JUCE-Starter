@@ -1,8 +1,4 @@
 #include "CustomLookAndFeel.h"
-#include "ActivationBar.h"
-#include "HeaderBar.h"
-#include "LevelMeter.h"
-#include "ModalOverlay.h"
 #include <BinaryData.h>
 #include <map>
 
@@ -61,17 +57,22 @@ juce::Font CustomLookAndFeel::getLabelFont (juce::Label& label)
     if (font.getTypefaceName() != juce::Font::getDefaultSansSerifFontName())
         return font;
 
-    return juce::Font (orbitron (font.isBold() ? boldWeight : regularWeight).withHeight (font.getHeight()));
+    return getEditorFont (font.getHeight(), font.isBold());
 }
 
 juce::Font CustomLookAndFeel::getTextButtonFont (juce::TextButton&, int)
 {
-    return juce::Font (orbitron (regularWeight).withHeight (12.0f));
+    return getEditorFont (12.0f, false);
 }
 
 juce::Font CustomLookAndFeel::getPopupMenuFont()
 {
-    return juce::Font (orbitron (regularWeight).withHeight (13.0f));
+    return getEditorFont (13.0f, false);
+}
+
+juce::Font CustomLookAndFeel::getEditorFont (float height, bool bold)
+{
+    return juce::Font (orbitron (bold ? boldWeight : regularWeight).withHeight (height));
 }
 
 // LookAndFeel_V4's geometry

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../PluginProcessor.h"
-#include "../ui/ActivationActions.h"
 
 //==============================================================================
 class WebViewEditor final : public juce::AudioProcessorEditor,

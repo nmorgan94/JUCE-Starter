@@ -88,13 +88,4 @@ namespace TestHelpers
         juce::ScopedJuceInitialiser_GUI juceInitialiser;
         AudioPluginAudioProcessor processor;
     };
-
-    // A parent the editor's size, for overlays
-    struct OverlayFixture
-    {
-        OverlayFixture()   { parent.setSize (AudioPluginAudioProcessorEditor::width, AudioPluginAudioProcessorEditor::height); }
-
-        juce::ScopedJuceInitialiser_GUI juceInitialiser;
-        juce::Component parent;
-    };
 }

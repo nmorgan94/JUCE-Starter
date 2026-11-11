@@ -29,6 +29,20 @@ test('a stereo sine comes out with the gain applied to both channels', () => {
   }
 });
 
+test('with nothing coming in, nothing comes out', () => {
+  const stereo = engine();
+  stereo.set('masterGain', 6);
+
+  const output = stereo.renderBlocks(1000);
+
+  assert.equal(output.length, 2);
+  output.forEach((channel) => {
+    assert.equal(channel.length, 1000);
+    assert.ok(channel.every((sample) => sample === 0));
+  });
+  assert.equal(stereo.engine.peak(0), 0);
+});
+
 test('a mono layout processes only the first channel', () => {
   const mono = engine(1);
   mono.set('masterGain', -6);

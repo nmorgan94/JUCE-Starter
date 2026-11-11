@@ -1,11 +1,9 @@
-// The page side of these names is webui/src/plugin/pluginBackend.ts
+// The page side of these names is SampleRealm-Modules' web/plugin/pluginBackend.ts
 #include "WebViewEditor.h"
 #include "../PluginEditor.h"
 #include "../shared/ParameterSpecs.h"
 #include <samplerealm/BuildCommit.h>
 #include <samplerealm/UiInfoJson.h>
-#include "../ui/About.h"
-#include "../ui/LevelMeter.h"
 #include <WebUIData.h>
 
 #if JUCE_MAC

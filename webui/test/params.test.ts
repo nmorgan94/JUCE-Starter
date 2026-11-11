@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { formatValue, fromProportion, parseValue, toProportion } from '../src/params.ts';
+import { formatValue, fromProportion, parseValue, toProportion } from '@samplerealm/modules/editor/params.ts';
 import { info, param } from './engine.ts';
 
 // From the Catch2 snapshot in Tests/ProcessorTests.cpp

@@ -5,7 +5,7 @@
 #include <samplerealm/PeakMeter.h>
 #include "Parameters.h"
 #include "dsp/Effect.h"
-#include "presets/PresetManager.h"
+#include <editor/editor.h>
 
 //==============================================================================
 class AudioPluginAudioProcessor final : public juce::AudioProcessor

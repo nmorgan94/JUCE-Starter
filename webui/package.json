@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@juce-framework/webview": "1.0.0",
-    "@samplerealm/modules": "github:nmorgan94/SampleRealm-Modules#068534c5cb6d2955c0528913a6d60d7294b71fd9",
+    "@samplerealm/modules": "github:nmorgan94/SampleRealm-Modules#be63b847855c2cb223fd03e4bb548585e2c7287e",
     "react": "18.3.1",
     "react-dom": "18.3.1"
   },

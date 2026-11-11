@@ -21,7 +21,6 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
         addChildComponent (*activationBar);
     }
 
-    prompt.setFont (CustomLookAndFeel::orbitron (CustomLookAndFeel::regularWeight).withHeight (14.0f));
     addChildComponent (prompt);
     addChildComponent (manual);
 
