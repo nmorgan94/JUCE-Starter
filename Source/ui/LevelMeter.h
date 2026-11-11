@@ -1,7 +1,7 @@
 #pragma once
 
 #include <juce_gui_basics/juce_gui_basics.h>
-#include "../dsp/PeakMeter.h"
+#include <samplerealm/PeakMeter.h>
 
 //==============================================================================
 /** A narrow peak meter with one bar per channel, each with a clip light on top. Bars rise at

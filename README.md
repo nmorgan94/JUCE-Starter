@@ -157,7 +157,7 @@ Needs Emscripten (`brew install emscripten`) and Node 24+.
 - The demo's input is made by `webui/src/demo/loop.ts`. For a recording, add it to
   `webui/public/demo/` as AAC (`.m4a`) so Safari can decode it, and decode it in `startAudio`.
 - The `webview` build installs over the native one; run the `release` workflow to switch back.
-- Delete `wasm/patches/juce-wasm.patch` once JUCE fixes its wasm support.
+- The wasm build patches JUCE (`cmake/patches/juce-wasm.patch` in SampleRealm-Modules) until JUCE fixes its wasm support.
 
 ## Plugin Locations
 
@@ -230,10 +230,13 @@ cmake --preset release -DPLUGIN_REQUIRE_ACTIVATION=ON   # fails without LICENCE_
   `127.0.0.1`, or the user copies it and clicks Paste, or downloads it and clicks Import.
 - A sandboxed host, such as GarageBand, keeps its own licence file, so it is activated once itself.
 
-The licensing code is fetched from [SampleRealm-Modules](https://github.com/nmorgan94/SampleRealm-Modules)
-at the commit in `CMakeLists.txt`. A build folder keeps a local copy once given one:
+The licensing code, the web demo's shell and its build come from
+[SampleRealm-Modules](https://github.com/nmorgan94/SampleRealm-Modules). One line in
+`webui/package.json` says which copy the plugin, wasm and web builds all use:
 
-```bash
-cmake --preset debug -DCPM_SampleRealm-Modules_SOURCE=/full/path/to/SampleRealm-Modules   # use a local copy
-cmake --preset debug -UCPM_SampleRealm-Modules_SOURCE                                     # back to the commit
+```json
+"@samplerealm/modules": "github:nmorgan94/SampleRealm-Modules#<full commit id>"
+"@samplerealm/modules": "file:../../SampleRealm-Modules"
 ```
+
+The first is what's committed; the second uses a local folder. Run `npm install` in `webui/` after changing it.

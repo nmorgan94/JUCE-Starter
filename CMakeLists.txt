@@ -13,15 +13,8 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_XCODE_GENERATE_SCHEME OFF)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-set(CPM_DOWNLOAD_VERSION 0.43.1)
-set(CPM_DOWNLOAD_LOCATION "${CMAKE_BINARY_DIR}/cmake/CPM_${CPM_DOWNLOAD_VERSION}.cmake")
-
-if (NOT EXISTS ${CPM_DOWNLOAD_LOCATION})
-    message(STATUS "Downloading CPM.cmake to ${CPM_DOWNLOAD_LOCATION}")
-    file(DOWNLOAD https://github.com/cpm-cmake/CPM.cmake/releases/download/v${CPM_DOWNLOAD_VERSION}/CPM.cmake ${CPM_DOWNLOAD_LOCATION})
-endif ()
-
-include(${CPM_DOWNLOAD_LOCATION})
+# CPM, and the code shared by every plugin
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules.cmake)
 
 # Bring in JUCE locally
 CPMAddPackage(
@@ -97,8 +90,11 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SourceFiles})
 # Make the SourceFiles buildable
 target_sources(${PROJECT_NAME} PRIVATE ${SourceFiles})
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/BuildInfo.cmake)
+include(${SampleRealm-Modules_SOURCE_DIR}/cmake/BuildInfo.cmake)
 add_build_info(${PROJECT_NAME})
+
+include(${SampleRealm-Modules_SOURCE_DIR}/cmake/Core.cmake)
+add_plugin_core(${PROJECT_NAME})
 
 # These are some toggleable options from the JUCE CMake API
 target_compile_definitions(${PROJECT_NAME}
@@ -117,8 +113,8 @@ if(PLUGIN_WEBVIEW_EDITOR)
     set(webUiZip "${CMAKE_CURRENT_BINARY_DIR}/WebUI.zip")
 
     file(GLOB_RECURSE uiInputs CONFIGURE_DEPENDS
-        "${uiDir}/src/*" "${uiDir}/package*.json" "${uiDir}/vite.config.ts" "${CMAKE_CURRENT_SOURCE_DIR}/Assets/*")
-    list(FILTER uiInputs EXCLUDE REGEX "/src/demo/")
+        "${uiDir}/src/*" "${SampleRealm-Modules_SOURCE_DIR}/web/*" "${uiDir}/package*.json" "${uiDir}/vite.config.ts" "${CMAKE_CURRENT_SOURCE_DIR}/Assets/*")
+    list(FILTER uiInputs EXCLUDE REGEX "/src/demo/|/web/(demo|testing)/")
 
     # npm writes this on every install
     set(npmInstalled "${uiDir}/node_modules/.package-lock.json")
@@ -197,18 +193,6 @@ if(WIN32)
         DEPENDS ${PROJECT_NAME}_VST3
         COMMENT "Installing VST3 into ${vst3CopyDir}")
 endif()
-
-# Shared by every plugin, by commit
-CPMAddPackage(
-  NAME
-    SampleRealm-Modules
-  GIT_TAG
-    76554036a2e52598d5c2cf34931f05f171e927b6
-  GITHUB_REPOSITORY
-    nmorgan94/SampleRealm-Modules
-  DOWNLOAD_ONLY
-    YES
-)
 
 include(${SampleRealm-Modules_SOURCE_DIR}/cmake/Licensing.cmake)
 add_licensing(${PROJECT_NAME})

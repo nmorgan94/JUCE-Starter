@@ -140,51 +140,6 @@ TEST_CASE_METHOD (ProcessorFixture, "Output meter follows the bus layout", "[bus
 }
 
 //==============================================================================
-struct FakePlayHead : juce::AudioPlayHead
-{
-    juce::Optional<PositionInfo> getPosition() const override   { return position; }
-
-    juce::Optional<PositionInfo> position;
-};
-
-static bool operator== (const Transport& a, const Transport& b)
-{
-    return juce::exactlyEqual (a.bpm, b.bpm) && a.playing == b.playing && juce::exactlyEqual (a.ppq, b.ppq);
-}
-
-TEST_CASE ("The transport takes the host's tempo and position, or defaults", "[transport]")
-{
-    FakePlayHead host;
-    juce::AudioPlayHead::PositionInfo position;
-    position.setBpm (128.0);
-    position.setIsPlaying (true);
-    position.setPpqPosition (8.5);
-    host.position = position;
-
-    CHECK (Transport::from (&host) == Transport { 128.0, true, 8.5 });
-
-    // The Standalone has no play head. Hosts may give no position, or leave out the tempo and the beat
-    CHECK (Transport::from (nullptr) == Transport {});
-    host.position = juce::nullopt;
-    CHECK (Transport::from (&host) == Transport {});
-    host.position = juce::AudioPlayHead::PositionInfo {};
-    CHECK (Transport::from (&host) == Transport {});
-}
-
-TEST_CASE ("The transport moves on only while playing", "[transport]")
-{
-    Transport transport { 120.0, true, 4.0 };
-
-    // Half a second at 120 BPM is one beat
-    transport.advance (24000, 48000.0);
-    CHECK_THAT (transport.ppq, WithinAbs (5.0, 1.0e-12));
-
-    transport.playing = false;
-    transport.advance (24000, 48000.0);
-    CHECK_THAT (transport.ppq, WithinAbs (5.0, 1.0e-12));
-}
-
-//==============================================================================
 TEST_CASE_METHOD (ProcessorFixture, "State round trips into a new instance", "[state]")
 {
     setParameter (processor, Parameters::masterGainId, -12.0f);

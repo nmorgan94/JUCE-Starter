@@ -1,12 +1,12 @@
 #include <juce_audio_basics/juce_audio_basics.h>
+#include <samplerealm/BuildCommit.h>
+#include <samplerealm/ParameterValues.h>
+#include <samplerealm/PeakMeter.h>
+#include <samplerealm/UiInfoJson.h>
+#include <samplerealm/WasmExport.h>
 #include "shared/ParameterSpecs.h"
 #include "shared/EffectSettings.h"
-#include "shared/UiInfoJson.h"
 #include "dsp/Effect.h"
-#include "dsp/PeakMeter.h"
-
-// BuildCommit.cpp
-extern const char* const buildCommit;
 
 //==============================================================================
 namespace
@@ -14,29 +14,7 @@ namespace
     constexpr int maxBlockSize = 128;
     constexpr int maxChannels = PeakMeter::maxChannels;
 
-    constexpr auto numParams = static_cast<int> (ParameterSpecs::all.size());
-
-    constexpr auto indexOf (const ParameterSpecs::Spec& spec)
-    {
-        return std::ranges::find (ParameterSpecs::all, &spec) - ParameterSpecs::all.begin();
-    }
-
-    auto defaultValues()
-    {
-        std::array<float, ParameterSpecs::all.size()> values;
-
-        for (size_t i = 0; i < values.size(); ++i)
-            values[i] = ParameterSpecs::all[i]->defaultValue;
-
-        return values;
-    }
-
-    auto values = defaultValues();
-
-    float valueOf (const ParameterSpecs::Spec& spec)
-    {
-        return values[static_cast<size_t> (indexOf (spec))];
-    }
+    ParameterValues values { ParameterSpecs::all };
 
     Effect effect;
     PeakMeter meter { maxChannels };
@@ -46,16 +24,14 @@ namespace
     Transport transport;
 }
 
-#define EXPORT(name) extern "C" __attribute__ ((export_name (#name)))
-
-EXPORT (uiInfo) const char* uiInfo()
+WASM_EXPORT (uiInfo) const char* uiInfo()
 {
-    static const auto json = uiInfoJson (PLUGIN_VERSION, buildCommit);
+    static const auto json = uiInfoJson (ParameterSpecs::all, PLUGIN_VERSION, buildCommit);
     return json.c_str();
 }
 
 // As isBusesLayoutSupported: mono or stereo, the same in and out
-EXPORT (prepare) void prepare (double sampleRate, int channels)
+WASM_EXPORT (prepare) void prepare (double sampleRate, int channels)
 {
     numChannels = std::clamp (channels, 1, maxChannels);
     currentSampleRate = sampleRate;
@@ -64,36 +40,35 @@ EXPORT (prepare) void prepare (double sampleRate, int channels)
     effect.prepare (sampleRate);
 }
 
-EXPORT (setParam) void setParam (int index, float value)
+WASM_EXPORT (setParam) void setParam (int index, float value)
 {
-    if (index >= 0 && index < numParams)
-        values[static_cast<size_t> (index)] = value;
+    values.set (index, value);
 }
 
 // The page plays the host: render moves the position on while playing
-EXPORT (setTransport) void setTransport (double bpm, bool playing, double ppq)
+WASM_EXPORT (setTransport) void setTransport (double bpm, bool playing, double ppq)
 {
     transport = { bpm, playing, ppq };
 }
 
 // Write the input here, and read the output back after render
-EXPORT (channel) float* channel (int index)
+WASM_EXPORT (channel) float* channel (int index)
 {
     return buffer.getWritePointer (std::clamp (index, 0, maxChannels - 1));
 }
 
-EXPORT (render) void render (int numSamples)
+WASM_EXPORT (render) void render (int numSamples)
 {
     juce::AudioBuffer<float> block { buffer.getArrayOfWritePointers(), numChannels, std::clamp (numSamples, 0, maxBlockSize) };
 
-    effect.setSettings (makeEffectSettings (valueOf));
+    effect.setSettings (makeEffectSettings (values));
     effect.process (block, transport);
     meter.process (block);
     transport.advance (block.getNumSamples(), currentSampleRate);
 }
 
 // The loudest output sample since the last call, as linear gain
-EXPORT (peak) float peak (int index)
+WASM_EXPORT (peak) float peak (int index)
 {
     return index >= 0 && index < numChannels ? meter.readAndReset (index) : 0.0f;
 }

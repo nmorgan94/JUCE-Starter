@@ -1,4 +1,4 @@
-import type { Transport } from './workletBackend.ts';
+import type { Transport } from '@samplerealm/modules/demo/workletBackend.ts';
 
 // A placeholder for the demo's input
 const BPM = 120;

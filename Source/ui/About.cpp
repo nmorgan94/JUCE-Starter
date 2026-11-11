@@ -1,12 +1,9 @@
 #include "About.h"
-#include "../shared/BuildType.h"
-#include <BuildInfo.h>
+#include <samplerealm/BuildCommit.h>
+#include <samplerealm/BuildType.h>
 
-// The only file that includes BuildInfo.h, so a new commit recompiles just this
 namespace About
 {
-    const char* const commit = PLUGIN_GIT_COMMIT;
-
     juce::String running (const juce::AudioProcessor& processor)
     {
         const juce::String format (juce::AudioProcessor::getWrapperTypeDescription (processor.wrapperType));
@@ -19,7 +16,7 @@ namespace About
     {
         return juce::StringArray { "Version " JucePlugin_VersionString,
                                    juce::String (BuildType::name) + " build",
-                                   "Commit " + juce::String (commit),
+                                   "Commit " + juce::String (buildCommit),
                                    running (processor),
                                    "Native UI" }.joinIntoString ("\n");
     }

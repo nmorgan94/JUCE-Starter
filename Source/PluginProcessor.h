@@ -2,9 +2,9 @@
 
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <licensing/licensing.h>
+#include <samplerealm/PeakMeter.h>
 #include "Parameters.h"
 #include "dsp/Effect.h"
-#include "dsp/PeakMeter.h"
 #include "presets/PresetManager.h"
 
 //==============================================================================

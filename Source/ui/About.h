@@ -5,8 +5,6 @@
 // Mirrored by webui/src/about.ts
 namespace About
 {
-    extern const char* const commit;
-
     /** "VST3 in Ableton Live", or the format alone when the host is unknown. */
     juce::String running (const juce::AudioProcessor&);
 

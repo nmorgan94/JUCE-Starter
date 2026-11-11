@@ -2,7 +2,8 @@
 #include "WebViewEditor.h"
 #include "../PluginEditor.h"
 #include "../shared/ParameterSpecs.h"
-#include "../shared/UiInfoJson.h"
+#include <samplerealm/BuildCommit.h>
+#include <samplerealm/UiInfoJson.h>
 #include "../ui/About.h"
 #include "../ui/LevelMeter.h"
 #include <WebUIData.h>
@@ -131,7 +132,7 @@ juce::WebBrowserComponent::Options WebViewEditor::createOptions()
         options = options.withOptionsFrom (*relay);
 
     return withActivationFunctions (withPresetFunctions (options))
-        .withInitialisationData ("uiInfo", juce::String (uiInfoJson (JucePlugin_VersionString, About::commit)))
+        .withInitialisationData ("uiInfo", juce::String (uiInfoJson (ParameterSpecs::all, JucePlugin_VersionString, buildCommit)))
         .withInitialisationData ("presetStatus", juce::JSON::toString (presetStatus (processorRef.getPresetManager()), true))
         .withInitialisationData ("activationStatus", juce::JSON::toString (activationStatus(), true))
         .withInitialisationData ("running", About::running (processorRef));

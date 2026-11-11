@@ -10,40 +10,6 @@ using Catch::Matchers::WithinAbs;
 using Ballistics = LevelMeter::Ballistics;
 
 //==============================================================================
-TEST_CASE ("Peak meter holds each channel's loudest sample until read", "[meter]")
-{
-    PeakMeter meter { 2 };
-    auto buffer = makeConstantBuffer (2, 64, 0.0f);
-
-    buffer.setSample (0, 10, -0.8f);    // a negative peak counts as much as a positive one
-    buffer.setSample (1, 3, 0.3f);
-    meter.process (buffer);
-
-    // A quieter block afterwards doesn't lower what's waiting to be read
-    meter.process (makeConstantBuffer (2, 64, 0.1f));
-
-    CHECK_THAT (meter.readAndReset (0), WithinAbs (0.8, 1.0e-6));
-    CHECK_THAT (meter.readAndReset (1), WithinAbs (0.3, 1.0e-6));
-
-    CHECK_THAT (meter.readAndReset (0), WithinAbs (0.0, 0.0));
-    CHECK_THAT (meter.readAndReset (1), WithinAbs (0.0, 0.0));
-}
-
-TEST_CASE ("A mono peak meter ignores extra channels", "[meter]")
-{
-    PeakMeter meter { 2 };
-    meter.setNumChannels (1);
-    REQUIRE (meter.getNumChannels() == 1);
-
-    auto buffer = makeConstantBuffer (2, 64, 0.2f);
-    buffer.applyGain (1, 0, 64, 4.0f);
-    meter.process (buffer);
-
-    CHECK_THAT (meter.readAndReset (0), WithinAbs (0.2, 1.0e-6));
-    CHECK_THAT (meter.readAndReset (1), WithinAbs (0.0, 0.0));
-}
-
-//==============================================================================
 TEST_CASE ("Level meter bars rise at once and fall smoothly", "[meter][ui]")
 {
     Ballistics bar;

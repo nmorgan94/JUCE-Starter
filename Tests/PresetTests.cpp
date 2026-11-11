@@ -36,7 +36,7 @@ namespace
         return names;
     }
 
-    // The same order as webui/test/demo/presetState.test.ts
+    // The same order as webui/test/demo/factoryPresets.test.ts
     const juce::StringArray factoryNames { "Boost +3", "Boost +6", "Cut -6", "Cut -12", "Cut -24" };
 }
 

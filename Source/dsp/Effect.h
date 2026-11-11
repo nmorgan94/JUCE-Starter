@@ -1,7 +1,7 @@
 #pragma once
 
 #include <juce_audio_basics/juce_audio_basics.h>
-#include "../shared/Transport.h"
+#include <samplerealm/Transport.h>
 
 //==============================================================================
 class Effect

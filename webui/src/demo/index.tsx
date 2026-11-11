@@ -1,28 +1,22 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import { DemoFrame } from '@samplerealm/modules/demo/DemoFrame.tsx';
+import { loadEngine, startWorklet } from '@samplerealm/modules/demo/engine.ts';
+import processorUrl from '@samplerealm/modules/demo/processor.js?url';
+import { workletBackend, type WorkletBackend } from '@samplerealm/modules/demo/workletBackend.ts';
 import { EDITOR_HEIGHT, EDITOR_WIDTH, Editor } from '../Editor.tsx';
 import { juceHeight } from '../fonts.ts';
 import { factoryPresets } from './factoryPresets.ts';
 import { loopTransport, makeLoop } from './loop.ts';
-import { loadEngine, workletBackend, type WorkletBackend } from './workletBackend.ts';
 import './styles.css';
 
 const ENGINE_URL = 'engine.wasm';
-const PROCESSOR_URL = 'processor.js';
+
+// This plugin's, as a site's demos share its storage
+const STORAGE_KEY = 'juce-starter-presets';
 
 // As the plugin's default stereo layout
 const CHANNELS = 2;
-
-const SIZE_MESSAGE = 'samplerealm-demo-size';
-
-// Blocked storage throws on access
-function browserStorage() {
-  try {
-    return window.localStorage;
-  } catch {
-    return undefined;
-  }
-}
 
 interface Audio {
   context: AudioContext;
@@ -31,10 +25,7 @@ interface Audio {
 }
 
 async function startAudio(backend: WorkletBackend, wasm: ArrayBuffer, context: AudioContext): Promise<Audio> {
-  await context.audioWorklet.addModule(PROCESSOR_URL);
-  const loop = makeLoop(context);
-
-  const node = new AudioWorkletNode(context, 'engine-processor', {
+  const node = await startWorklet(context, processorUrl, {
     numberOfInputs: 1,
     outputChannelCount: [CHANNELS],
     channelCount: CHANNELS,
@@ -42,31 +33,9 @@ async function startAudio(backend: WorkletBackend, wasm: ArrayBuffer, context: A
     processorOptions: { wasm, channels: CHANNELS },
   });
 
-  await new Promise<void>((resolve, reject) => {
-    node.port.onmessage = ({ data }) => {
-      if (data.type === 'ready') resolve();
-      else if (data.type === 'error') reject(new Error(data.message));
-    };
-  });
-
   node.connect(context.destination);
   backend.attach(node.port);
-  return { context, node, loop };
-}
-
-function useScale() {
-  const [scale, setScale] = useState(1);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const element = ref.current;
-    if (!element) return;
-    const observer = new ResizeObserver(() => setScale(Math.min(1, element.clientWidth / EDITOR_WIDTH)));
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, []);
-
-  return { ref, scale };
+  return { context, node, loop: makeLoop(context) };
 }
 
 // The loop runs through the engine, so Pause also lets the meter fall
@@ -110,29 +79,11 @@ function Demo() {
   const [audio, setAudio] = useState<Audio | null>(null);
   const [failed, setFailed] = useState(false);
   const context = useRef<AudioContext | null>(null);
-  const { ref, scale } = useScale();
-  const editor = useRef<HTMLDivElement>(null);
-
-  // Not the document's height, which never shrinks below the frame. The editor's box is measured,
-  // as its scale catches up with the frame's width a render late
-  useEffect(() => {
-    const content = ref.current;
-    const box = editor.current;
-    if (window.parent === window || !content || !box) return;
-
-    const report = () => {
-      const below = Math.round(content.getBoundingClientRect().height - box.getBoundingClientRect().height);
-      window.parent.postMessage({ type: SIZE_MESSAGE, editorWidth: EDITOR_WIDTH, editorHeight: EDITOR_HEIGHT, below }, '*');
-    };
-    const observer = new ResizeObserver(report);
-    observer.observe(content);
-    return () => observer.disconnect();
-  }, [ref]);
   const player = usePlayer(audio, engine?.backend);
 
   useEffect(() => {
     loadEngine(ENGINE_URL)
-      .then(({ wasm, info }) => setEngine({ backend: workletBackend(info, factoryPresets, browserStorage()), wasm }))
+      .then(({ wasm, info }) => setEngine({ backend: workletBackend(info, { storageKey: STORAGE_KEY, factoryPresets }), wasm }))
       .catch((error) => {
         console.error('Demo failed to load:', error);
         setFailed(true);
@@ -160,22 +111,12 @@ function Demo() {
   useEffect(() => () => void context.current?.close(), []);
 
   return (
-    <div className="mx-auto" style={{ maxWidth: EDITOR_WIDTH }} ref={ref}>
-      <div className="relative overflow-hidden rounded-xl" ref={editor} style={{ width: EDITOR_WIDTH * scale, height: EDITOR_HEIGHT * scale }}>
-        <div className="origin-top-left" style={{ width: EDITOR_WIDTH, height: EDITOR_HEIGHT, transform: `scale(${scale})` }}>
-          {engine && <Editor backend={engine.backend} />}
-        </div>
-        {(failed || !audio) && (
-          <div className="absolute inset-0 z-30 flex items-center justify-center bg-background/55">
-            {failed ? (
-              <p className="text-sm text-clip">The demo couldn't start. Please try again later.</p>
-            ) : (
-              <p className="text-sm font-bold">Loading…</p>
-            )}
-          </div>
-        )}
-      </div>
-
+    <DemoFrame
+      width={EDITOR_WIDTH}
+      height={EDITOR_HEIGHT}
+      status={failed ? 'failed' : audio ? 'ready' : 'loading'}
+      editor={engine && <Editor backend={engine.backend} />}
+    >
       <button
         type="button"
         className="mt-2.5 h-7 w-20 cursor-pointer border border-line bg-background text-fg disabled:cursor-default disabled:opacity-50"
@@ -186,7 +127,7 @@ function Demo() {
       >
         {player.playing ? 'PAUSE' : 'PLAY'}
       </button>
-    </div>
+    </DemoFrame>
   );
 }
 

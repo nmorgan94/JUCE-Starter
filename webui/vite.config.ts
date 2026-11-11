@@ -27,6 +27,8 @@ export default defineConfig(({ mode }) => {
     // Loaded from the plugin's zip and from the CDN's demo folder
     base: './',
     plugins: [react(), tailwindcss(), localEngine()],
+    // A linked @samplerealm/modules has its own React installed
+    resolve: { dedupe: ['react', 'react-dom'] },
     server: { port: 8099, fs: { allow: [resolve(import.meta.dirname, '..')] } },
     build: {
       outDir: resolve(import.meta.dirname, 'dist', mode),
