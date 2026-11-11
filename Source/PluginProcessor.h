@@ -63,7 +63,7 @@ public:
 
 private:
     juce::AudioProcessorValueTreeState apvts { *this, nullptr, "Parameters",
-                                               Parameters::createLayout() };
+                                               createParameterLayout (ParameterSpecs::all, Parameters::versionHint) };
     PresetManager presetManager { apvts, createPresetConfig() };
 
     Effect effect;

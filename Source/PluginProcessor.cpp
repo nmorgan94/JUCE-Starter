@@ -4,7 +4,7 @@
 #include <BinaryData.h>
 
 #if PLUGIN_WEBVIEW_EDITOR
- #include "webview/WebViewEditor.h"
+ #include <webview_editor/webview_editor.h>
 #endif
 
 //==============================================================================
@@ -201,7 +201,13 @@ licensing::Activation& AudioPluginAudioProcessor::getActivation()
 juce::AudioProcessorEditor* AudioPluginAudioProcessor::createEditor()
 {
    #if PLUGIN_WEBVIEW_EDITOR
-    return new WebViewEditor (*this);
+    return new WebViewEditor (*this, { .specs = ParameterSpecs::all,
+                                       .parameters = apvts,
+                                       .presets = presetManager,
+                                       .meter = outputMeter,
+                                       .activation = requiresActivation ? &getActivation() : nullptr,
+                                       .width = AudioPluginAudioProcessorEditor::width,
+                                       .height = AudioPluginAudioProcessorEditor::height });
    #else
     return new AudioPluginAudioProcessorEditor (*this);
    #endif

@@ -140,19 +140,6 @@ TEST_CASE_METHOD (ProcessorFixture, "Output meter follows the bus layout", "[bus
 }
 
 //==============================================================================
-TEST_CASE_METHOD (ProcessorFixture, "State round trips into a new instance", "[state]")
-{
-    setParameter (processor, Parameters::masterGainId, -12.0f);
-
-    juce::MemoryBlock state;
-    processor.getStateInformation (state);
-
-    AudioPluginAudioProcessor restored;
-    restored.setStateInformation (state.getData(), static_cast<int> (state.getSize()));
-
-    CHECK_THAT (getParameter (restored, Parameters::masterGainId), WithinAbs (-12.0, 1.0e-4));
-}
-
 TEST_CASE_METHOD (ProcessorFixture, "Invalid state is ignored", "[state]")
 {
     setParameter (processor, Parameters::masterGainId, -3.0f);

@@ -80,10 +80,6 @@ file(GLOB_RECURSE SourceFiles
     "${CMAKE_CURRENT_SOURCE_DIR}/Source/*.h"
 )
 
-if(NOT PLUGIN_WEBVIEW_EDITOR)
-    list(FILTER SourceFiles EXCLUDE REGEX "/Source/webview/")
-endif()
-
 # How we want our SourceFiles to appear in our IDE
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SourceFiles})
 
