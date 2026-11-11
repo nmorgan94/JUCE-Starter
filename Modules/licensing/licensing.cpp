@@ -13,3 +13,5 @@
 #include "TrustedKeys.cpp"
 #include "LicenceVerifier.cpp"
 #include "LicenceFile.cpp"
+#include "Activation.cpp"
+#include "LoopbackReceiver.cpp"

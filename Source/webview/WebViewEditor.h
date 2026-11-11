@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../PluginProcessor.h"
+#include "../ui/ActivationActions.h"
 
 //==============================================================================
 class WebViewEditor final : public juce::AudioProcessorEditor,
@@ -17,9 +18,16 @@ private:
 
     juce::WebBrowserComponent::Options createOptions();
     juce::WebBrowserComponent::Options withPresetFunctions (const juce::WebBrowserComponent::Options&);
+    juce::WebBrowserComponent::Options withActivationFunctions (const juce::WebBrowserComponent::Options&);
+    juce::var activationStatus() const;
     std::optional<juce::WebBrowserComponent::Resource> getResource (const juce::String& url);
 
     AudioPluginAudioProcessor& processorRef;
+
+    // Only in a build that requires activation
+    std::unique_ptr<ActivationActions> activation;
+    bool activationBarShowing = false;
+    int ticksSinceActivationCheck = 0;
 
     // Declaration order matters: relays, browser, attachments
     std::vector<std::unique_ptr<juce::WebSliderRelay>> relays;

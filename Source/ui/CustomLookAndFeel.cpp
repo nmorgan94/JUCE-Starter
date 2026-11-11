@@ -1,4 +1,5 @@
 #include "CustomLookAndFeel.h"
+#include "ActivationBar.h"
 #include "HeaderBar.h"
 #include "LevelMeter.h"
 #include "ModalOverlay.h"
@@ -41,6 +42,8 @@ CustomLookAndFeel::CustomLookAndFeel()
     setColour (LevelMeter::backgroundColourId, scheme.getUIColour (UI::windowBackground));
     setColour (HeaderBar::backgroundColourId, scheme.getUIColour (UI::widgetBackground));
     setColour (HeaderBar::titleColourId, scheme.getUIColour (UI::defaultText));
+    setColour (ActivationBar::backgroundColourId, scheme.getUIColour (UI::widgetBackground));
+    setColour (ActivationBar::outlineColourId, scheme.getUIColour (UI::outline));
 
     setColour (juce::Slider::rotarySliderFillColourId, scheme.getUIColour (UI::defaultFill));
 }

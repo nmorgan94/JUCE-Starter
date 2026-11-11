@@ -91,6 +91,13 @@ WebViewEditor::WebViewEditor (AudioPluginAudioProcessor& p)
         relays.push_back (std::make_unique<juce::WebSliderRelay> (spec->id));
 
     lastPresetChange = processorRef.getPresetManager().getChangeCounter();
+
+    if (AudioPluginAudioProcessor::requiresActivation)
+    {
+        activation = std::make_unique<ActivationActions> (processorRef.getActivation());
+        activationBarShowing = activation->needsActivation();
+    }
+
     browser = std::make_unique<SinglePageBrowser> (createOptions());
     hideMacWebViewBackground (*browser);
 
@@ -123,9 +130,10 @@ juce::WebBrowserComponent::Options WebViewEditor::createOptions()
     for (auto& relay : relays)
         options = options.withOptionsFrom (*relay);
 
-    return withPresetFunctions (options)
+    return withActivationFunctions (withPresetFunctions (options))
         .withInitialisationData ("uiInfo", juce::String (uiInfoJson (JucePlugin_VersionString, About::commit)))
         .withInitialisationData ("presetStatus", juce::JSON::toString (presetStatus (processorRef.getPresetManager()), true))
+        .withInitialisationData ("activationStatus", juce::JSON::toString (activationStatus(), true))
         .withInitialisationData ("running", About::running (processorRef));
 }
 
@@ -207,6 +215,43 @@ juce::WebBrowserComponent::Options WebViewEditor::withPresetFunctions (const juc
         });
 }
 
+juce::var WebViewEditor::activationStatus() const
+{
+    auto status = std::make_unique<juce::DynamicObject>();
+    status->setProperty ("show", activation != nullptr && activation->needsActivation());
+    status->setProperty ("machine", activation != nullptr ? activation->machineCode() : juce::String());
+    return juce::var (status.release());
+}
+
+juce::WebBrowserComponent::Options WebViewEditor::withActivationFunctions (const juce::WebBrowserComponent::Options& options)
+{
+    using Args = juce::Array<juce::var>;
+    using Completion = juce::WebBrowserComponent::NativeFunctionCompletion;
+
+    if (activation == nullptr)
+        return options;
+
+    // Paste and import complete with a message for the user, empty when there is nothing to say
+    return options
+        .withNativeFunction ("activationStatus", [this] (const Args&, Completion complete)
+        {
+            complete (activationStatus());
+        })
+        .withNativeFunction ("activationOpenBrowser", [this] (const Args&, Completion complete)
+        {
+            activation->openBrowser();
+            complete ({});
+        })
+        .withNativeFunction ("activationPaste", [this] (const Args&, Completion complete)
+        {
+            complete (activation->paste());
+        })
+        .withNativeFunction ("activationImport", [this] (const Args&, Completion complete)
+        {
+            activation->importFile ([complete = std::move (complete)] (const juce::String& message) { complete (message); });
+        });
+}
+
 std::optional<juce::WebBrowserComponent::Resource> WebViewEditor::getResource (const juce::String& url)
 {
     const auto path = url == "/" ? juce::String ("index.html") : url.fromFirstOccurrenceOf ("/", false, false);
@@ -241,6 +286,19 @@ void WebViewEditor::timerCallback()
     {
         lastPresetChange = change;
         browser->emitEventIfBrowserIsVisible ("presetStatus", presetStatus (presets));
+    }
+
+    // Once a second, in case another plugin activated this machine
+    if (activationBarShowing && ++ticksSinceActivationCheck >= LevelMeter::Ballistics::updateHz && browser->isShowing())
+    {
+        ticksSinceActivationCheck = 0;
+        activation->refresh();
+
+        if (! activation->needsActivation())
+        {
+            activationBarShowing = false;
+            browser->emitEventIfBrowserIsVisible ("activationStatus", activationStatus());
+        }
     }
 }
 

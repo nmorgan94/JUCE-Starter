@@ -1,10 +1,39 @@
 // The C++ side of these names is Source/webview/WebViewEditor.cpp
 import { getNativeFunction, getSliderState } from '@juce-framework/webview';
-import { listenerSet, paramLookup, type Level, type PluginBackend, type PresetBackend, type PresetEntry, type PresetStatus, type UiInfo } from '../backend.ts';
+import { listenerSet, paramLookup, type ActivationBackend, type ActivationStatus, type Level, type PluginBackend, type PresetBackend, type PresetEntry, type PresetStatus, type UiInfo } from '../backend.ts';
 import { toProportion } from '../params.ts';
 
 // JUCE's type lists only its own initialisation data
-type InitialisationData = { uiInfo: string[]; presetStatus: string[]; running: string[] };
+type InitialisationData = { uiInfo: string[]; presetStatus: string[]; activationStatus: string[]; running: string[] };
+
+function pluginActivation(initial: ActivationStatus): ActivationBackend {
+  let status = initial;
+  const listeners = listenerSet<[ActivationStatus]>();
+
+  const update = (payload: unknown) => {
+    status = payload as ActivationStatus;
+    listeners.notify(status);
+  };
+
+  const call = (name: string) => getNativeFunction(name)();
+
+  // Activated or not, the bar follows what the plugin now says
+  const message = async (result: Promise<unknown>) => {
+    const said = ((await result) as string) || null;
+    update(await call('activationStatus'));
+    return said;
+  };
+
+  window.__JUCE__.backend.addEventListener('activationStatus', update);
+
+  return {
+    status: () => status,
+    onStatus: listeners.add,
+    openBrowser: () => void call('activationOpenBrowser'),
+    paste: () => message(call('activationPaste')),
+    importFile: () => message(call('activationImport')),
+  };
+}
 
 function pluginPresets(initial: PresetStatus): PresetBackend {
   let status = initial;
@@ -40,7 +69,8 @@ function pluginPresets(initial: PresetStatus): PresetBackend {
 }
 
 export function pluginBackend(): PluginBackend {
-  const { uiInfo, presetStatus, running } = window.__JUCE__.initialisationData as unknown as InitialisationData;
+  const { uiInfo, presetStatus, activationStatus, running } = window.__JUCE__.initialisationData as unknown as InitialisationData;
+  const activation = JSON.parse(activationStatus[0]) as ActivationStatus;
   const info = JSON.parse(uiInfo[0]) as UiInfo;
   const entry = paramLookup(new Map(info.params.map((param) => [param.id, { param, slider: getSliderState(param.id) }])));
 
@@ -51,6 +81,8 @@ export function pluginBackend(): PluginBackend {
     info,
     running: running[0],
     presets: pluginPresets(JSON.parse(presetStatus[0]) as PresetStatus),
+    // Its functions exist only where the bar could show
+    activation: activation.show ? pluginActivation(activation) : undefined,
     param,
     getValue: (id) => slider(id).getScaledValue(),
     setValue: (id, value) => slider(id).setNormalisedValue(toProportion(param(id), value)),

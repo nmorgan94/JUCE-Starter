@@ -43,6 +43,8 @@ option(PLUGIN_COPY_AFTER_BUILD "Copy the plugin into the system plug-in folders 
 
 option(PLUGIN_WEBVIEW_EDITOR "Use the WebView editor from webui/ instead of the native one" OFF)
 
+option(PLUGIN_REQUIRE_ACTIVATION "Show the activation bar until this machine has a licence" OFF)
+
 if(PLUGIN_WEBVIEW_EDITOR)
     set(webViewPluginOptions NEEDS_WEB_BROWSER TRUE NEEDS_WEBVIEW2 TRUE)
 endif()
@@ -103,6 +105,7 @@ target_compile_definitions(${PROJECT_NAME}
     PRIVATE
         JUCE_WEB_BROWSER=$<BOOL:${PLUGIN_WEBVIEW_EDITOR}>
         PLUGIN_WEBVIEW_EDITOR=$<BOOL:${PLUGIN_WEBVIEW_EDITOR}>
+        PLUGIN_REQUIRE_ACTIVATION=$<BOOL:${PLUGIN_REQUIRE_ACTIVATION}>
         JUCE_USE_CURL=0
         JUCE_VST3_CAN_REPLACE_VST2=0
 )

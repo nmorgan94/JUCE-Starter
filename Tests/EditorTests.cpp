@@ -132,14 +132,27 @@ TEST_CASE_METHOD (ProcessorFixture, "The title fits the header without being cut
     CHECK (width * HeaderBar::minimumTitleScale < layout.titleWidth);
 }
 
+TEST_CASE_METHOD (ProcessorFixture, "The editor has an activation bar only in a build that requires activation", "[editor][activation]")
+{
+    AudioPluginAudioProcessorEditor editor (processor);
+    const auto bars = descendantsOf<ActivationBar> (editor);
+
+    REQUIRE (bars.size() == (AudioPluginAudioProcessor::requiresActivation ? 1 : 0));
+
+    if (! bars.empty())
+        CHECK (bars[0]->getBounds() == editor.getLocalBounds().removeFromBottom (ActivationBar::height));
+}
+
 TEST_CASE_METHOD (ProcessorFixture, "The editor's text is Orbitron", "[editor][font]")
 {
     AudioPluginAudioProcessorEditor editor (processor);
 
     const auto labels = descendantsOf<juce::Label> (editor);
 
-    // The knob's label, the overlays' titles and the prompt's message
-    REQUIRE (labels.size() == 4);
+    const auto hasActivationBar = AudioPluginAudioProcessor::requiresActivation;
+
+    // The knob's label, the overlays' titles and the prompt's message, and the activation bar's code
+    REQUIRE (labels.size() == (hasActivationBar ? 5 : 4));
 
     for (auto* label : labels)
     {
@@ -149,8 +162,9 @@ TEST_CASE_METHOD (ProcessorFixture, "The editor's text is Orbitron", "[editor][f
 
     const auto buttons = descendantsOf<juce::TextButton> (editor);
 
-    // The preset bar's four, the header's menu button, the prompt's two and the manual's one
-    REQUIRE (buttons.size() == 8);
+    // The preset bar's four, the header's menu button, the prompt's two and the manual's one,
+    // and the activation bar's three
+    REQUIRE (buttons.size() == (hasActivationBar ? 11 : 8));
 
     for (auto* button : buttons)
     {

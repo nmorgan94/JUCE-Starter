@@ -190,6 +190,14 @@ bool AudioPluginAudioProcessor::hasEditor() const
     return true; // (change this to false if you choose to not supply an editor)
 }
 
+licensing::Activation& AudioPluginAudioProcessor::getActivation()
+{
+    if (activation == nullptr)
+        activation = std::make_unique<licensing::Activation>();
+
+    return *activation;
+}
+
 juce::AudioProcessorEditor* AudioPluginAudioProcessor::createEditor()
 {
    #if PLUGIN_WEBVIEW_EDITOR

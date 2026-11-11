@@ -58,6 +58,23 @@ export interface PresetBackend {
   showFolder?(): void;
 }
 
+export interface ActivationStatus {
+  // False once activated
+  show: boolean;
+  // As shown: K7Q2-M9XH-4TBV-8RNC
+  machine: string;
+}
+
+// Mirrors Source/ui/ActivationActions.h
+export interface ActivationBackend {
+  status(): ActivationStatus;
+  onStatus(listener: (status: ActivationStatus) => void): () => void;
+  openBrowser(): void;
+  // Each resolves to a message for the user, or null
+  paste(): Promise<string | null>;
+  importFile(): Promise<string | null>;
+}
+
 export const isSamePreset = (a: PresetEntry, b: PresetEntry) => a.name === b.name && a.isFactory === b.isFactory;
 
 export interface PluginBackend {
@@ -65,6 +82,8 @@ export interface PluginBackend {
   // "VST3 in Ableton Live", or where else the editor is running
   running: string;
   presets: PresetBackend;
+  // Only in a plugin built to require activation
+  activation?: ActivationBackend;
   param(id: string): ParamInfo;
   // Real values, not 0..1
   getValue(id: string): number;

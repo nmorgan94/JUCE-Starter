@@ -15,6 +15,12 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     gainKnob.getSlider().setTextValueSuffix (juce::String (" ") + ParameterSpecs::masterGain.unit);
     addAndMakeVisible (gainKnob);
 
+    if (AudioPluginAudioProcessor::requiresActivation)
+    {
+        activationBar = std::make_unique<ActivationBar> (processorRef.getActivation(), prompt);
+        addChildComponent (*activationBar);
+    }
+
     prompt.setFont (CustomLookAndFeel::orbitron (CustomLookAndFeel::regularWeight).withHeight (14.0f));
     addChildComponent (prompt);
     addChildComponent (manual);
@@ -45,4 +51,7 @@ void AudioPluginAudioProcessorEditor::resized()
     header.setBounds (bounds.removeFromTop (headerLayout.height));
 
     gainKnob.setBounds (bounds.withSizeKeepingCentre (140, 190));
+
+    if (activationBar != nullptr)
+        activationBar->setBounds (bounds.removeFromBottom (ActivationBar::height));
 }

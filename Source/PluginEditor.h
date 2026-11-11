@@ -2,6 +2,7 @@
 
 #include "PluginProcessor.h"
 #include "ui/About.h"
+#include "ui/ActivationBar.h"
 #include "ui/CustomLookAndFeel.h"
 #include "ui/HeaderBar.h"
 #include "ui/LabeledSlider.h"
@@ -42,6 +43,9 @@ private:
     LabeledSlider gainKnob;
     juce::AudioProcessorValueTreeState::SliderAttachment gainAttachment {
         processorRef.getAPVTS(), Parameters::masterGainId.getParamID(), gainKnob.getSlider() };
+
+    // Only in a build that requires activation
+    std::unique_ptr<ActivationBar> activationBar;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessorEditor)
 };

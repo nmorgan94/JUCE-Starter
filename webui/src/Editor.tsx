@@ -1,5 +1,6 @@
 // Mirrors AudioPluginAudioProcessorEditor::resized()
 import { memo, useState } from 'react';
+import { ActivationBar } from './ActivationBar.tsx';
 import type { PluginBackend } from './backend.ts';
 import { LabeledSlider } from './controls.tsx';
 import { EditorRootContext } from './editorRoot.ts';
@@ -53,6 +54,7 @@ export const Editor = memo(function Editor({ backend }: { backend: PluginBackend
           showManual={manual.showManual}
           meter={({ left, top, width, height }) => <LevelMeter backend={backend} x={left} y={top} width={width} height={height} />}
         />
+        {backend.activation && <ActivationBar activation={backend.activation} width={EDITOR_WIDTH} prompt={prompt} />}
         {overlay}
         {manual.overlay}
       </div>

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
+#include <licensing/licensing.h>
 #include "Parameters.h"
 #include "dsp/Effect.h"
 #include "dsp/PeakMeter.h"
@@ -54,6 +55,12 @@ public:
 
     static PresetManager::Config createPresetConfig();
 
+    // Editors show the activation bar only in a build that asks for it
+    static constexpr bool requiresActivation = PLUGIN_REQUIRE_ACTIVATION;
+
+    // Made on first use, by an editor: it reads the licence file
+    licensing::Activation& getActivation();
+
 private:
     juce::AudioProcessorValueTreeState apvts { *this, nullptr, "Parameters",
                                                Parameters::createLayout() };
@@ -62,6 +69,8 @@ private:
     Effect effect;
 
     PeakMeter outputMeter { getTotalNumOutputChannels() };
+
+    std::unique_ptr<licensing::Activation> activation;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessor)
 };

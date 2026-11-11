@@ -217,3 +217,15 @@ licence verifies; if a `.env` exists, configuring fails instead, so a forgotten 
 cp .env.example .env   # then fill in LICENCE_KEYS; .env is ignored by git
 source .env            # before configuring
 ```
+
+Activation is off by default. To show the activation bar until the machine has a licence, set
+`ACTIVATION_URL` in `.env` to your website's page and configure with:
+
+```bash
+cmake --preset release -DPLUGIN_REQUIRE_ACTIVATION=ON   # fails without LICENCE_KEYS and ACTIVATION_URL
+```
+
+- The plugin works fully without a licence; only the bar shows.
+- Activate opens the page with the machine's code. The page sends the licence back to the plugin on
+  `127.0.0.1`, or the user copies it and clicks Paste, or downloads it and clicks Import.
+- A sandboxed host, such as GarageBand, keeps its own licence file, so it is activated once itself.

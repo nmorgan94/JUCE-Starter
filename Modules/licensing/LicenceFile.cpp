@@ -17,26 +17,14 @@ namespace licensing
                                    const MachineCode& thisMachine,
                                    std::span<const TrustedKey> trustedKeys)
     {
-        constexpr juce::int64 largestLicenceFile = 4096;
-
         if (! licenceFile.existsAsFile())
             return { LicenceStatus::noLicenceFile, {} };
 
         juce::MemoryBlock contents;
 
-        if (licenceFile.getSize() > largestLicenceFile || ! licenceFile.loadFileAsData (contents))
+        if (std::cmp_greater (licenceFile.getSize(), largestLicenceBytes) ||! licenceFile.loadFileAsData (contents))
             return { LicenceStatus::malformed, {} };
 
         return verifyLicence ({ contents.begin(), contents.getSize() }, thisMachine, trustedKeys);
-    }
-
-    LicenceCheck checkInstalledLicence()
-    {
-        const auto thisMachine = MachineCode::forThisMachine();
-
-        if (! thisMachine)
-            return { LicenceStatus::noMachineCode, {} };
-
-        return checkLicenceFile (licenceFileLocation(), *thisMachine, productionKeys());
     }
 }

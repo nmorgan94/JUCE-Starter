@@ -1,43 +1,11 @@
 
-#include <catch2/catch_test_macros.hpp>
-
-#include <licensing/licensing.h>
+#include "LicenceFixtures.h"
 
 using namespace licensing;
+using namespace LicenceFixtures;
 
 namespace
 {
-    const juce::File fixtures { LICENCE_FIXTURES_DIR };
-
-    juce::File fixtureFile (const juce::String& fileName)
-    {
-        const auto file = fixtures.getChildFile (fileName);
-        REQUIRE (file.existsAsFile());
-        return file;
-    }
-
-    std::string fixtureText (const juce::String& fileName)   { return fixtureFile (fileName).loadFileAsString().toStdString(); }
-    juce::var fixtureJson (const juce::String& fileName)     { return juce::JSON::parse (fixtureFile (fileName)); }
-
-    // The website's test key, which only the tests may trust
-    struct TestKey
-    {
-        TestKey()
-        {
-            const auto json = fixtureJson ("test-key.json");
-            keyId = json["keyId"].toString().toStdString();
-
-            const auto parsedKey = publicKeyFromHex (json["publicKey"].toString().toStdString());
-            REQUIRE (parsedKey);
-            publicKey = *parsedKey;
-        }
-
-        std::vector<TrustedKey> trusted() const   { return { { keyId, publicKey } }; }
-
-        std::string keyId;
-        PublicKey publicKey {};
-    };
-
     // The names cases.json uses
     juce::String nameOf (LicenceStatus status)
     {
@@ -54,14 +22,6 @@ namespace
 
         return {};
     }
-
-    MachineCode fixtureMachine()
-    {
-        const auto machine = MachineCode::fromCanonical (fixtureJson ("cases.json")["machine"].toString());
-        REQUIRE (machine);
-        return *machine;
-    }
-
 }
 
 //==============================================================================

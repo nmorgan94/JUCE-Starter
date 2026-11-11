@@ -10,6 +10,8 @@
   /* For the shared header and overlays, as the native colour IDs in CustomLookAndFeel */
   --color-header: var(--color-widget);
   --color-title: var(--color-fg);
+  --color-activation: var(--color-widget);
+  --color-activation-outline: var(--color-line);
   --color-overlay-dim: color-mix(in oklab, var(--color-background) 75%, transparent);
   --color-overlay-panel: var(--color-widget);
   --color-overlay-outline: var(--color-line);
