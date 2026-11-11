@@ -43,12 +43,6 @@ function(add_unit_tests pluginTarget)
         return()
     endif()
 
-    get_target_property(pluginLibraries ${pluginTarget} LINK_LIBRARIES)
-
-    if(NOT "licensing" IN_LIST pluginLibraries)
-        message(FATAL_ERROR "unit tests: Tests/LicenceTests.cpp needs add_licensing(${pluginTarget}) called before add_unit_tests")
-    endif()
-
     set(testTarget "${pluginTarget}_Tests")
 
     file(GLOB_RECURSE TestFiles
@@ -71,12 +65,9 @@ function(add_unit_tests pluginTarget)
         "${CMAKE_CURRENT_SOURCE_DIR}/Source"
         $<TARGET_PROPERTY:${pluginTarget},INCLUDE_DIRECTORIES>)
 
-    target_compile_definitions(${testTarget} PRIVATE
-        LICENCE_FIXTURES_DIR="${CMAKE_CURRENT_SOURCE_DIR}/Tests/fixtures/licence"
-        LICENCE_KEYS="${LICENCE_KEYS}")
-
     target_link_libraries(${testTarget} PRIVATE
         ${pluginTarget}
+        licensing::fixtures
         Catch2::Catch2WithMain)
 
     catch_discover_tests(${testTarget} TEST_PREFIX "${pluginTarget}.unit.")

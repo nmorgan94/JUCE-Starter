@@ -198,7 +198,19 @@ if(WIN32)
         COMMENT "Installing VST3 into ${vst3CopyDir}")
 endif()
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Licensing.cmake)
+# Shared by every plugin, by commit
+CPMAddPackage(
+  NAME
+    SampleRealm-Modules
+  GIT_TAG
+    76554036a2e52598d5c2cf34931f05f171e927b6
+  GITHUB_REPOSITORY
+    nmorgan94/SampleRealm-Modules
+  DOWNLOAD_ONLY
+    YES
+)
+
+include(${SampleRealm-Modules_SOURCE_DIR}/cmake/Licensing.cmake)
 add_licensing(${PROJECT_NAME})
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Pluginval.cmake)

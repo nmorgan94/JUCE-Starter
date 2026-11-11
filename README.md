@@ -229,3 +229,11 @@ cmake --preset release -DPLUGIN_REQUIRE_ACTIVATION=ON   # fails without LICENCE_
 - Activate opens the page with the machine's code. The page sends the licence back to the plugin on
   `127.0.0.1`, or the user copies it and clicks Paste, or downloads it and clicks Import.
 - A sandboxed host, such as GarageBand, keeps its own licence file, so it is activated once itself.
+
+The licensing code is fetched from [SampleRealm-Modules](https://github.com/nmorgan94/SampleRealm-Modules)
+at the commit in `CMakeLists.txt`. A build folder keeps a local copy once given one:
+
+```bash
+cmake --preset debug -DCPM_SampleRealm-Modules_SOURCE=/full/path/to/SampleRealm-Modules   # use a local copy
+cmake --preset debug -UCPM_SampleRealm-Modules_SOURCE                                     # back to the commit
+```
