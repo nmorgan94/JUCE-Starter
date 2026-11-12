@@ -205,8 +205,9 @@ juce_add_plugin(${PROJECT_NAME}
 )
 ```
 
-`COMPANY_NAME` also salts the machine code and names the licence file
-(`<COMPANY_NAME>/<COMPANY_NAME>.licence`), so it can't change once a plugin has shipped.
+`COMPANY_NAME` and `PRODUCT_NAME` also salt the machine code and name the licence file
+(`<COMPANY_NAME>/<PRODUCT_NAME>.licence`), so neither can change once the plugin has shipped. A
+licence is for one plugin on one machine.
 
 The licence signing keys the plugin trusts come from the `LICENCE_KEYS` environment variable, read
 when CMake configures. A build folder remembers the keys it was last given, so only its first
@@ -226,7 +227,7 @@ cmake --preset release -DPLUGIN_REQUIRE_ACTIVATION=ON   # fails without LICENCE_
 ```
 
 - The plugin works fully without a licence; only the bar shows.
-- Activate opens the page with the machine's code. The page sends the licence back to the plugin on
+- Activate opens the page with the machine's code for this plugin. The page sends the licence back to the plugin on
   `127.0.0.1`, or the user copies it and clicks Paste, or downloads it and clicks Import.
 - A sandboxed host, such as GarageBand, keeps its own licence file, so it is activated once itself.
 
