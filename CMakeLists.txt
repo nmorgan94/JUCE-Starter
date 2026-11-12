@@ -152,11 +152,9 @@ if(WIN32)
         COMMENT "Installing VST3 into ${vst3CopyDir}")
 endif()
 
-include(${SampleRealm-Modules_SOURCE_DIR}/cmake/Licensing.cmake)
-add_licensing(${PROJECT_NAME})
-
-include(${SampleRealm-Modules_SOURCE_DIR}/cmake/Editor.cmake)
-add_plugin_editor(${PROJECT_NAME})
+# The editor and the activation bar, with licensing
+include(${SampleRealm-Modules_SOURCE_DIR}/cmake/Activation.cmake)
+add_plugin_activation(${PROJECT_NAME})
 
 include(${SampleRealm-Modules_SOURCE_DIR}/cmake/Pluginval.cmake)
 add_pluginval_tests(${PROJECT_NAME})
