@@ -203,8 +203,8 @@ juce::AudioProcessorEditor* AudioPluginAudioProcessor::createEditor()
    #if PLUGIN_WEBVIEW_EDITOR
     return new WebViewEditor (*this, { .specs = ParameterSpecs::all,
                                        .parameters = apvts,
-                                       .presets = presetManager,
-                                       .meter = outputMeter,
+                                       .presets = &presetManager,
+                                       .meter = &outputMeter,
                                        .activation = requiresActivation ? &getActivation() : nullptr,
                                        .width = AudioPluginAudioProcessorEditor::width,
                                        .height = AudioPluginAudioProcessorEditor::height });
