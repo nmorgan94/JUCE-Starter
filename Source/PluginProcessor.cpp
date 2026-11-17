@@ -198,6 +198,14 @@ licensing::Activation& AudioPluginAudioProcessor::getActivation()
     return *activation;
 }
 
+updates::UpdateCheck& AudioPluginAudioProcessor::getUpdateCheck()
+{
+    if (updateCheck == nullptr)
+        updateCheck = std::make_unique<updates::UpdateCheck>();
+
+    return *updateCheck;
+}
+
 juce::AudioProcessorEditor* AudioPluginAudioProcessor::createEditor()
 {
    #if PLUGIN_WEBVIEW_EDITOR
@@ -206,6 +214,7 @@ juce::AudioProcessorEditor* AudioPluginAudioProcessor::createEditor()
                                        .presets = &presetManager,
                                        .meter = &outputMeter,
                                        .activation = requiresActivation ? &getActivation() : nullptr,
+                                       .updates = &getUpdateCheck(),
                                        .width = AudioPluginAudioProcessorEditor::width,
                                        .height = AudioPluginAudioProcessorEditor::height });
    #else

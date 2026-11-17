@@ -7,6 +7,9 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
 {
     setLookAndFeel (&customLookAndFeel);
 
+    header.setOwnMenuItems ([this] (juce::PopupMenu& menu) { updateActions.addMenuItems (menu); });
+    updateActions.onChange = [this] { header.setMenuMarked (updateActions.notice().isNotEmpty()); };
+    updateActions.onChange();
     addAndMakeVisible (header);
 
     // The id lets tests find the knob

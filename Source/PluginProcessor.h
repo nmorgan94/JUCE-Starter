@@ -6,6 +6,7 @@
 #include "Parameters.h"
 #include "dsp/Effect.h"
 #include <activation/activation.h>
+#include <updates/updates.h>
 
 //==============================================================================
 class AudioPluginAudioProcessor final : public juce::AudioProcessor
@@ -61,6 +62,9 @@ public:
     // Made on first use, by an editor: it reads the licence file
     licensing::Activation& getActivation();
 
+    // Made on first use, by an editor: it reads its file, and asks the website only once an editor opens
+    updates::UpdateCheck& getUpdateCheck();
+
 private:
     juce::AudioProcessorValueTreeState apvts { *this, nullptr, "Parameters",
                                                createParameterLayout (ParameterSpecs::all, Parameters::versionHint) };
@@ -71,6 +75,7 @@ private:
     PeakMeter outputMeter { getTotalNumOutputChannels() };
 
     std::unique_ptr<licensing::Activation> activation;
+    std::unique_ptr<updates::UpdateCheck> updateCheck;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessor)
 };

@@ -156,6 +156,10 @@ endif()
 include(${SampleRealm-Modules_SOURCE_DIR}/cmake/Activation.cmake)
 add_plugin_activation(${PROJECT_NAME})
 
+# Tells the user when the website has a newer version
+include(${SampleRealm-Modules_SOURCE_DIR}/cmake/Updates.cmake)
+add_plugin_updates(${PROJECT_NAME})
+
 include(${SampleRealm-Modules_SOURCE_DIR}/cmake/Pluginval.cmake)
 add_pluginval_tests(${PROJECT_NAME})
 

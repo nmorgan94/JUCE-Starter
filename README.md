@@ -231,6 +231,16 @@ cmake --preset release -DPLUGIN_REQUIRE_ACTIVATION=ON   # fails without LICENCE_
   `127.0.0.1`, or the user copies it and clicks Paste, or downloads it and clicks Import.
 - A sandboxed host, such as GarageBand, keeps its own licence file, so it is activated once itself.
 
+To tell users when the website has a newer version, set `UPDATE_URL` in `.env` to the plugin's page there,
+as `https://example.com/plugins/example`. It is read and remembered like `LICENCE_KEYS`, until it is taken out of
+`.env`; unset, the plugin never asks.
+
+- Once a day at most, after an editor opens, the plugin asks `<UPDATE_URL>/version` for `{"version":"0.0.2"}`.
+- A newer version puts a dot on the "..." button and "v0.0.2 available" in its menu, which opens `UPDATE_URL`.
+  The plugin downloads nothing.
+- "Check for updates" in the menu turns it off. What it heard is kept in `<COMPANY_NAME>/<PRODUCT_NAME>.updates`.
+- The unit tests never ask. pluginval does in a build with `UPDATE_URL`, as it opens editors.
+
 The licensing code, the web demo's shell and its build come from
 [SampleRealm-Modules](https://github.com/nmorgan94/SampleRealm-Modules). One line in
 `webui/package.json` says which copy the plugin, wasm and web builds all use:

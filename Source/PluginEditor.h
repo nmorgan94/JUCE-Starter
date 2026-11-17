@@ -34,6 +34,9 @@ private:
     HeaderBar header { "JUCE STARTER", headerLayout, processorRef.getPresetManager(), prompt, [this] { manual.show(); },
                        About::text (processorRef), outputMeter };
 
+    // Starts the check that is due
+    UpdateActions updateActions { processorRef.getUpdateCheck() };
+
     LabeledSlider gainKnob;
     juce::AudioProcessorValueTreeState::SliderAttachment gainAttachment {
         processorRef.getAPVTS(), Parameters::masterGainId.getParamID(), gainKnob.getSlider() };
