@@ -133,9 +133,8 @@ extra test; enable it with `-DPLUGINVAL_VST3_VALIDATOR=ON`.
 ## CI
 
 [`.github/workflows/ci.yml`](.github/workflows/ci.yml) builds the Release plugin on macOS and Windows
-and runs the unit tests. It only runs when started by hand: **Actions → CI → Run workflow** on
-GitHub, or `gh workflow run ci.yml`. Tick **Also run pluginval** (or pass `-f pluginval=true`) to
-validate the plugin too, which takes longer.
+and runs the unit tests and pluginval. It runs on every push to `main`, or by hand:
+**Actions → CI → Run workflow** on GitHub, or `gh workflow run ci.yml`.
 
 Each run's page lists the plugins under **Artifacts** for 30 days: `JuceStarter-macOS.tar.gz` (VST3
 and AU) and `JuceStarter-Windows.tar.gz` (VST3). They are unsigned.
@@ -153,7 +152,7 @@ Needs Emscripten (`brew install emscripten`) and Node 24+.
 
 - The demo builds to `wasm/build-wasm/<company>-<project>-<version>/`, named from `COMPANY_NAME`
   (one word), `project()` and `VERSION` in `CMakeLists.txt`. Upload that folder; the site embeds its `index.html` in an iframe.
-  [`wasm.yml`](.github/workflows/wasm.yml) builds the same folder on GitHub as an artifact of that name, run by hand.
+  [`wasm.yml`](.github/workflows/wasm.yml) builds the same folder on GitHub as an artifact of that name, on every push to `main` or by hand.
 - The demo's input is made by `webui/src/demo/loop.ts`. For a recording, add it to
   `webui/public/demo/` as AAC (`.m4a`) so Safari can decode it, and decode it in `startAudio`.
 - The `webview` build installs over the native one; run the `release` workflow to switch back.
