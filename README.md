@@ -156,6 +156,11 @@ Needs Emscripten (`brew install emscripten`) and Node 24+.
 - The demo's input is made by `webui/src/demo/loop.ts`. For a recording, add it to
   `webui/public/demo/` as AAC (`.m4a`) so Safari can decode it, and decode it in `startAudio`.
 - The `webview` build installs over the native one; run the `release` workflow to switch back.
+- **Windows**: the `webview` build needs Microsoft's WebView2 package, installed once per machine from Windows PowerShell:
+  ```powershell
+  Register-PackageSource -provider NuGet -name nugetRepository -location https://www.nuget.org/api/v2
+  Install-Package Microsoft.Web.WebView2 -Scope CurrentUser -RequiredVersion 1.0.3485.44 -Source nugetRepository
+  ```
 - The wasm build patches JUCE (`cmake/patches/juce-wasm.patch` in SampleRealm-Modules) until JUCE fixes its wasm support.
 
 ## Plugin Locations
